@@ -1,5 +1,5 @@
 # psych.js
-A javascript library for psychrometric calculations.
+A javascript library for psychrometric calculations. See the viewer [here](https://david-jackson.github.io/psych.js/viewer).
 
 ## Components
 

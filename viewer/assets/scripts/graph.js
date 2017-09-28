@@ -62,6 +62,17 @@ function Graph(_width, _height) {
 			document.getElementById("psychStats").innerHTML = pt.toString();
 		}
 	};
+
+	this.mousePressed = function(x, y) {
+		var pt = new psych.PointBuilder()
+			.withElevation(this.properties.elevation)
+			.withDryBulb(map(x, 0, this.graphWidth, this.properties.axes.x.min, this.properties.axes.x.max))
+			.withHumidityRatio(map(y, 0, this.graphHeight, this.properties.axes.y.max, this.properties.axes.y.min) / 7000)
+			.build();
+		if (pt.properties.rh <= 100) {
+			document.getElementById("psychStats").innerHTML = pt.toString();
+		}
+	}
 	
 	this.draw = function() {
 		var start = new Date().getTime();

@@ -38,3 +38,7 @@ function windowResized() {
 function mouseMoved() {
 	//graph.mouseMoved();
 }
+
+function mousePressed() {
+	graph.mousePressed(mouseX, mouseY);
+}
