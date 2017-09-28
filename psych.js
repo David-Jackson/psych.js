@@ -63,7 +63,8 @@ psych.Point = function(opts) {
 			  "<p>Elevation: " + this.properties.elevation + "ft</p>"
 			+ "<p>Dry Bulb Temp: " + this.properties.db.toFixed(2) + String.fromCharCode(176) + "F</p>"
 			+ "<p>Wet Bulb Temp: " + this.properties.wb.toFixed(2) + String.fromCharCode(176) + "F</p>"
-			+ "<p>Rel Humidity: " + this.properties.rh.toFixed(2) + "%</p>"
+			+ "<p>Relative Humidity: " + this.properties.rh.toFixed(2) + "%</p>"
+			+ "<p>Enthalpy: " + this.properties.h.toFixed(2) + " BTU/lb</p>"
 			+ "<p>Dew Point: " + this.properties.dp.toFixed(2) + String.fromCharCode(176) + "F</p>"
 		);
 	};
