@@ -197,9 +197,9 @@ function Graph(_width, _height) {
 			beginShape();
 			for (var i = 0; i < this.graphWidth; i++) {
 				var db = map(i, 0, this.graphWidth, MIN_DB, MAX_DB);
-				var W = psych.calculations.WTR(p, db, j);
+				var W = psych.calculations.WTR(p, db, j) * 7000;
 				if (W > MAX_W) break;
-				var y = map(W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
+				var y = map(W, MIN_W, MAX_W, this.graphHeight, 0);
 				vertex(i, y);
 			}
 			endShape();
@@ -308,8 +308,7 @@ function Graph(_width, _height) {
 
 	this.drawPoints = function() {
 		fill(200, 0, 0);
-		stroke(255, 0, 0);
-		strokeWeight(1);
+		noStroke();
 		this.points.forEach(function(point) {
 			ellipse(point.properties.graphX, point.properties.graphY, 10, 10);
 		}, this);
