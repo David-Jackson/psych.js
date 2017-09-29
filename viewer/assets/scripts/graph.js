@@ -1,8 +1,10 @@
 function Graph(_width, _height) {
 	this.width = _width;
 	this.height = _height;
+	this.points = [];
 	
 	this.initProperties = function() {
+
 		this.properties = {
 			elevation: 0,
 		};
@@ -35,6 +37,20 @@ function Graph(_width, _height) {
 		
 		this.graphHeight = this.height - this.properties.axes.x.height;
 		this.graphWidth = this.width- this.properties.axes.y.width;
+
+
+		// re-initialize all point graphX and graphY properties
+		let MIN_DB = this.properties.axes.x.min;
+		let MAX_DB = this.properties.axes.x.max;
+		
+		let MIN_W = this.properties.axes.y.min;
+		let MAX_W = this.properties.axes.y.max;
+		this.points.forEach(function(point) {
+			point.properties.graphX = map(point.properties.db, MIN_DB, MAX_DB, 0, this.graphWidth);
+			point.properties.graphY = map(point.properties.W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
+		}, this);
+
+
 	};
 	this.initProperties();
 	
@@ -81,6 +97,7 @@ function Graph(_width, _height) {
 		var start = new Date().getTime();
 		this.drawGraph();
 		this.drawLabels();
+		this.drawPoints();
 		var end = new Date().getTime();
 		console.log("Drawing the graph took", end - start, "ms");
 	}
@@ -273,5 +290,28 @@ function Graph(_width, _height) {
 			text(W, 0, 0);
 			pop();
 		}
+	}
+
+	
+
+	this.addPoint = function(point) {
+		let MIN_DB = this.properties.axes.x.min;
+		let MAX_DB = this.properties.axes.x.max;
+		
+		let MIN_W = this.properties.axes.y.min;
+		let MAX_W = this.properties.axes.y.max;
+		point.properties.graphX = map(point.properties.db, MIN_DB, MAX_DB, 0, this.graphWidth);
+		point.properties.graphY = map(point.properties.W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
+		this.points.push(point);
+		redraw();
+	}
+
+	this.drawPoints = function() {
+		fill(200, 0, 0);
+		stroke(255, 0, 0);
+		strokeWeight(1);
+		this.points.forEach(function(point) {
+			ellipse(point.properties.graphX, point.properties.graphY, 10, 10);
+		}, this);
 	}
 }
