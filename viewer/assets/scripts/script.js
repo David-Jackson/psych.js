@@ -36,9 +36,13 @@ function windowResized() {
 }
 
 function mouseMoved() {
-	//graph.mouseMoved();
+	//graph.mouseMoved(mouseX, mouseY);
 }
 
 function mousePressed() {
-	graph.mousePressed(mouseX, mouseY);
+	//graph.mousePressed(mouseX, mouseY);
+}
+
+window.ondblclick = function() {
+	graph.addPointFromXY(mouseX, mouseY);
 }

@@ -68,27 +68,16 @@ function Graph(_width, _height) {
 		this.draw();
 	}
 	
-	this.mouseMoved = function() {
-		var pt = new psych.PointBuilder()
-			.withElevation(this.properties.elevation)
-			.withDryBulb(map(mouseX, 0, this.graphWidth, this.properties.axes.x.min, this.properties.axes.x.max))
-			.withHumidityRatio(map(mouseY, 0, this.graphHeight, this.properties.axes.y.max, this.properties.axes.y.min) / 7000)
-			.build();
-		if (pt.properties.rh <= 100) {
+	this.mouseMoved = function(x, y) {
+		var pt = this.pointFromXY(x, y);
+		if (pt != null && pt.properties.rh <= 100) {
 			document.getElementById("psychStats").innerHTML = pt.toString();
 		}
 	};
 
 	this.mousePressed = function(x, y) {
-		var db = map(x, 0, this.graphWidth, this.properties.axes.x.min, this.properties.axes.x.max);
-		var W = map(y, 0, this.graphHeight, this.properties.axes.y.max, this.properties.axes.y.min) / 7000;
-		if (W < 0) return;
-		var pt = new psych.PointBuilder()
-			.withElevation(this.properties.elevation)
-			.withDryBulb(db)
-			.withHumidityRatio(W)
-			.build();
-		if (pt.properties.rh <= 100) {
+		var pt = this.pointFromXY(x, y);
+		if (pt != null && pt.properties.rh <= 100) {
 			document.getElementById("psychStats").innerHTML = pt.toString();
 		}
 	}
@@ -292,7 +281,19 @@ function Graph(_width, _height) {
 		}
 	}
 
-	
+	this.pointFromXY = function(x, y) {
+		var db = map(x, 0, this.graphWidth, this.properties.axes.x.min, this.properties.axes.x.max);
+		var W = map(y, 0, this.graphHeight, this.properties.axes.y.max, this.properties.axes.y.min) / 7000;
+		if (W < 0) return null;
+		var pt = new psych.PointBuilder()
+			.withElevation(this.properties.elevation)
+			.withDryBulb(db)
+			.withHumidityRatio(W)
+			.build();
+		if (pt.properties.rh <= 100) {
+			return pt;
+		}
+	}
 
 	this.addPoint = function(point) {
 		let MIN_DB = this.properties.axes.x.min;
@@ -304,6 +305,10 @@ function Graph(_width, _height) {
 		point.properties.graphY = map(point.properties.W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
 		this.points.push(point);
 		redraw();
+	}
+
+	this.addPointFromXY = function(x, y) {
+		this.addPoint(this.pointFromXY(x, y));
 	}
 
 	this.drawPoints = function() {
