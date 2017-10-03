@@ -1,9 +1,10 @@
-
+var canvas;
 var graph;
 var stationary = true;
 
 function setup() {
-	createCanvas(windowWidth, windowHeight);
+	canvas = createCanvas(windowWidth, windowHeight);
+	canvas.parent("sketch-holder");
 	background(244, 249, 250);
 	graph = new Graph(width, height);
 	noLoop();
@@ -40,7 +41,7 @@ function mouseMoved() {
 }
 
 function mousePressed() {
-	//graph.mousePressed(mouseX, mouseY);
+	graph.mousePressed(mouseX, mouseY);
 }
 
 window.ondblclick = function() {

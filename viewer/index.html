@@ -55,6 +55,15 @@
 				margin-left: auto;
 				margin-right: auto;
 			}
+			.noselect {
+				-webkit-touch-callout: none; /* iOS Safari */
+					-webkit-user-select: none; /* Safari */
+					-khtml-user-select: none; /* Konqueror HTML */
+						-moz-user-select: none; /* Firefox */
+							-ms-user-select: none; /* Internet Explorer/Edge */
+									user-select: none; /* Non-prefixed version, currently
+																				supported by Chrome and Opera */
+			}
 		</style>	
 	</head>
 	<body>
@@ -72,7 +81,7 @@
 		  </div>
 	  </div>
 		<nav>
-		<div class="nav-wrapper">
+		<div class="nav-wrapper noselect">
 		  <a href="#" class="brand-logo center"><img src="assets/images/Durr_AG_logo_white.svg" id="durrLogo"/></a>
 		  <ul id="nav-mobile" class="right hide-on-small-and-down">
 			<li><a href="https://github.com/david-jackson">Made by David Jackson</a></li>
@@ -81,7 +90,7 @@
 		</nav>
       <div class="row">
         <div class="col">
-          <div class="card" style="background-color:#FFF;margin:8px;">
+          <div class="card noselect" style="background-color:#FFF;margin:8px;">
             <div class="card-content">
               <span class="card-title">Psychrometric Chart</span>
               <div id="psychStats">
@@ -91,5 +100,8 @@
           </div>
         </div>
       </div>
+			<div id="sketch-holder">
+
+			</div>
 	</body>
 </html>
