@@ -466,7 +466,12 @@ psych.calculations = {
 		let g1 = 71;
 		let e1 = (H - (psych.constants.C1 + psych.constants.C2 * g1) * g1) /
 			(psych.constants.C3 + psych.constants.C4 * g1) - this.WTR(P, g1, RH);
+		let iterCount = 0, iterCountLimit = 10000;
 		while (true) {
+			if (iterCount++ > iterCountLimit) {
+				console.error("ITER LIMIT REACHED TRH", P, RH, H); 
+				break;
+			}
 			let e2 = (H - (psych.constants.C1 + psych.constants.C2 * g2) * g2) /
 				(psych.constants.C3 + psych.constants.C4 * g2) - this.WTR(P, g2, RH); // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {
@@ -501,9 +506,14 @@ psych.calculations = {
 		let pws_wbf = this.PWS(WBF);
 		let g2 = 70
 		let g1 = 71
-		let e1 = (pws_wbf - ((P - pws_wbf) * (g1 - WBF)) / (2830 - 1.44 * WBF)) - RH * this.PWS(g1) / 100
+		let e1 = (pws_wbf - ((P - pws_wbf) * (g1 - WBF)) / (2830 - 1.44 * WBF)) - RH * this.PWS(g1) / 100;
+		let iterCount = 0, iterCountLimit = 10000;
 		while (true) {
-			let e2 = (pws_wbf - ((P - pws_wbf) * (g2 - WBF)) / (2830 - 1.44 * WBF)) - RH * this.PWS(g2) / 100
+			if (iterCount++ > iterCountLimit) {
+				console.error("ITER LIMIT REACHED TRB", P, RH, WBF); 
+				break;
+			}
+			let e2 = (pws_wbf - ((P - pws_wbf) * (g2 - WBF)) / (2830 - 1.44 * WBF)) - RH * this.PWS(g2) / 100;
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
 			} else if (Math.log10(Math.abs(e2)) < -14) {
@@ -571,7 +581,12 @@ psych.calculations = {
 		let g2 = 300;					// First guess for TF
 		let g1 = 301;					// Old guess
 		let e1 = PWS2 - this.PWS(g1); 	// Error of old guess
+		let iterCount = 0, iterCountLimit = 10000;
 		while (true) {
+			if (iterCount++ > iterCountLimit) {
+				console.error("ITER LIMIT REACHED TPws", PWS2); 
+				break;
+			}
 			let e2 = PWS2 - this.PWS(g2) // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
@@ -784,7 +799,12 @@ psych.calculations = {
 		let pws_g1 = this.PWS(g1);
 		let pw_rf = this.PW(TF, RH);
 		let e1 = pw_rf - (pws_g1 - ((P - pws_g1) * (TF - g1)) / (2830 - 1.44 * g1)); // Error of old guess
+		let iterCount = 0, iterCountLimit = 10000;
 		while (true) {
+			if (iterCount++ > iterCountLimit) {
+				console.error("ITER LIMIT REACHED BTR", P, TF, RH); 
+				break;
+			}
 			let pws_g2 = this.PWS(g2);
 			let e2 = pw_rf - (pws_g2 - ((P - pws_g2) * (TF - g2)) / (2830 - 1.44 * g2)); // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {

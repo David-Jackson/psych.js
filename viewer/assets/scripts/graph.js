@@ -193,6 +193,8 @@ function Graph(_width, _height) {
 			}
 			endShape();
 		}
+
+		this.drawEnthalpyLabels();
 	};
 	
 	this.drawLabels = function() {
@@ -304,7 +306,7 @@ function Graph(_width, _height) {
 		point.properties.graphX = map(point.properties.db, MIN_DB, MAX_DB, 0, this.graphWidth);
 		point.properties.graphY = map(point.properties.W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
 		this.points.push(point);
-		redraw();
+		this.drawPoints();
 	}
 
 	this.addPointFromXY = function(x, y) {
@@ -318,4 +320,14 @@ function Graph(_width, _height) {
 			ellipse(point.properties.graphX, point.properties.graphY, 10, 10);
 		}, this);
 	}
+
+
+
+	this.drawEnthalpyLabels = function() {
+
+
+	}
+
+
+
 }
