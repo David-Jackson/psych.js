@@ -476,7 +476,7 @@ psych.calculations = {
 				(psych.constants.C3 + psych.constants.C4 * g2) - this.WTR(P, g2, RH); // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
-			} else if (Math.log10(Math.abs(e2)) < -14) {
+			} else if (Math.log10(Math.abs(e2)) <= -13) {
 				break;
 			}
 			let g3 = g2 - ((g1 - g2) * e2 / (e1 - e2)); // Calc new guess
@@ -516,7 +516,7 @@ psych.calculations = {
 			let e2 = (pws_wbf - ((P - pws_wbf) * (g2 - WBF)) / (2830 - 1.44 * WBF)) - RH * this.PWS(g2) / 100;
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
-			} else if (Math.log10(Math.abs(e2)) < -14) {
+			} else if (Math.log10(Math.abs(e2)) <= -13) {
 				break;
 			}
 			let g3 = g2 - ((g1 - g2) * e2 / (e1 - e2)); // Calc new guess
@@ -590,7 +590,7 @@ psych.calculations = {
 			let e2 = PWS2 - this.PWS(g2) // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
-			} else if (Math.log10(Math.abs(e2)) < -14) {
+			} else if (Math.log10(Math.abs(e2)) <= -13) {
 				break;
 			}
 			let g3 = g2 - ((g1 - g2) * e2 / (e1 - e2)); //Calc new guess
@@ -809,7 +809,7 @@ psych.calculations = {
 			let e2 = pw_rf - (pws_g2 - ((P - pws_g2) * (TF - g2)) / (2830 - 1.44 * g2)); // Error of current guess
 			if (e2 == 0 || e1 - e2 == 0) {
 				break;
-			} else if (Math.log10(Math.abs(e2)) < -14) {
+			} else if (Math.log10(Math.abs(e2)) <= -13) {
 				break;
 			}
 			let g3 = g2 - ((g1 - g2) * e2 / (e1 - e2)); // Calc new guess
