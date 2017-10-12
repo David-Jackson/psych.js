@@ -6,7 +6,7 @@ function Graph(_width, _height) {
 	this.initProperties = function() {
 
 		this.properties = {
-			elevation: 0,
+			elevation: 2083,
 		};
 		
 		this.properties.defaults = {
@@ -186,7 +186,13 @@ function Graph(_width, _height) {
 			line(x, y, this.graphWidth, y);
 		}
 	
-		for (let h = 0; h <= 60; h = h + 5) {
+		let minH = psych.calculations.HTW(MIN_DB, MIN_W / 7000);
+		let maxH = psych.calculations.HTW(MAX_DB, MAX_W / 7000);
+		let hIncrement = 5;
+		minH += hIncrement - (minH % hIncrement);
+		maxH -= (maxH % hIncrement);
+
+		for (let h = minH; h <= maxH; h = h + hIncrement) {
 			let startDb = psych.calculations.TRH(p, 100, h);
 			let startW = psych.calculations.WTH(startDb, h) * 7000;
 			let startX = map(startDb, MIN_DB, MAX_DB, 0, this.graphWidth);
@@ -199,8 +205,6 @@ function Graph(_width, _height) {
 			}
 			let endW = psych.calculations.WTH(endDb, h) * 7000;
 			let endY = map(endW, MIN_W, MAX_W, this.graphHeight, 0);
-			stroke(this.properties.defaults.primaryLineColor);
-			strokeWeight(this.properties.defaults.primaryLineStrokeWeight);
 			line(startX, startY, endX, endY);
 			
 		}
