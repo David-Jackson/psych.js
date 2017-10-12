@@ -11,8 +11,11 @@ function Graph(_width, _height) {
 		
 		this.properties.defaults = {
 			axesSize: 48,
+
+			backgroundColor: color(244, 249, 250),
+
 			primaryLineColor: color(161, 177, 192),
-			primaryLineStrokeWeight: 2,
+			primaryLineStrokeWeight: 1,
 			
 			secondaryLineColor: color(230),
 			secondaryLineStrokeWeight: 1
@@ -191,7 +194,7 @@ function Graph(_width, _height) {
 		let hIncrement = 5;
 		minH += hIncrement - (minH % hIncrement);
 		maxH -= (maxH % hIncrement);
-
+		push();
 		for (let h = minH; h <= maxH; h = h + hIncrement) {
 			let startDb = psych.calculations.TRH(p, 100, h);
 			let startW = psych.calculations.WTH(startDb, h) * 7000;
@@ -208,6 +211,7 @@ function Graph(_width, _height) {
 			line(startX, startY, endX, endY);
 			
 		}
+		pop();
 
 		let min_wb = psych.calculations.BTW(p, MIN_DB, MIN_W / 7000);
 		let max_wb = psych.calculations.BTW(p, MAX_DB, MAX_W / 7000);
@@ -290,7 +294,7 @@ function Graph(_width, _height) {
 			textAlign(LEFT,CENTER);
 			translate(x1, y1);
 			rotate(a);
-			fill(244, 249, 250);
+			fill(this.properties.defaults.backgroundColor);
 			rect(0, -6, txtWidth, 12);
 			fill(0);
 			text(txt, 0, 0);
@@ -316,7 +320,7 @@ function Graph(_width, _height) {
 			translate(x1, y1);
 			rotate(a);
 			noStroke();
-			fill(244, 249, 250);
+			fill(this.properties.defaults.backgroundColor);
 			rect(0, -10, txtWidth, 16 + 4);
 			fill(0);
 			text(txt, 0, 0);
