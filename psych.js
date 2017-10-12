@@ -333,12 +333,15 @@ psych.MixedFlow = function(pt1, pt2) {
 	
 	console.log(mFlow1, mFlow2, mFlow3, pt2.properties.db - (pt2.properties.db - pt1.properties.db) * (mFlow1 / mFlow3));
 	
-	return new psych.Point({
-		volume: pt1.properties.volume + pt2.properties.volume,
-		elevation: pt1.properties.elevation,
-		db: pt2.properties.db - (pt2.properties.db - pt1.properties.db) * (mFlow1 / mFlow3),
-		W: pt2.properties.W - (pt2.properties.W - pt1.properties.W) * (mFlow1 / mFlow3)
-	});
+	var mixedPoint =  new psych.PointBuilder()
+		.withElevation(pt1.properties.elevation)
+		.withDryBulb(pt2.properties.db - (pt2.properties.db - pt1.properties.db) * (mFlow1 / mFlow3))
+		.withHumidityRatio(pt2.properties.W - (pt2.properties.W - pt1.properties.W) * (mFlow1 / mFlow3))
+		.build();
+	
+	mixedPoint.properties.volume = pt1.properties.volume + pt2.properties.volume;
+	
+	return mixedPoint;
 };
 
 psych.constants = {
