@@ -129,6 +129,32 @@ function Graph(_width, _height) {
 			let y = map(W, MIN_W, MAX_W, this.graphHeight, 0);
 			line(x, y, this.graphWidth, y);
 		}
+
+		let min_wb = psych.calculations.BTW(p, MIN_DB, MIN_W / 7000);
+		let max_wb = psych.calculations.BTW(p, MAX_DB, MAX_W / 7000);
+		let wbIncrement = 1;
+		min_wb += wbIncrement - (min_wb % wbIncrement);
+		max_wb -= (max_wb % wbIncrement);
+
+		for (let wb = min_wb; wb <= max_wb; wb = wb + wbIncrement) {
+			if (wb % 5 == 0) continue;
+			let startDb = wb;
+			if (startDb < MIN_DB) {
+				startDb = MIN_DB;
+			}
+			let startW = psych.calculations.WTB(p, startDb, wb) * 7000;
+			let startX = map(startDb, MIN_DB, MAX_DB, 0, this.graphWidth);
+			let startY = map(startW, MIN_W, MAX_W, this.graphHeight, 0);
+			let endW = 0;
+			let endDb = psych.calculations.TWB(p, endW, wb);
+			if (endDb > MAX_DB) {
+				endDb = MAX_DB;
+				endW = psych.calculations.WTB(p, endDb, wb) * 7000;
+			}
+			let endX = map(endDb, MIN_DB, MAX_DB, 0, this.graphWidth);
+			let endY = map(endW, MIN_W, MAX_W, this.graphHeight, 0);
+			line(startX, startY, endX, endY);
+		}
 		
 	};
 	
@@ -178,6 +204,32 @@ function Graph(_width, _height) {
 			line(startX, startY, endX, endY);
 			
 		}
+
+		let min_wb = psych.calculations.BTW(p, MIN_DB, MIN_W / 7000);
+		let max_wb = psych.calculations.BTW(p, MAX_DB, MAX_W / 7000);
+		let wbIncrement = 5;
+		min_wb += wbIncrement - (min_wb % wbIncrement);
+		max_wb -= (max_wb % wbIncrement);
+
+		for (let wb = min_wb; wb <= max_wb; wb = wb + wbIncrement) {
+			let startDb = wb;
+			if (startDb < MIN_DB) {
+				startDb = MIN_DB;
+			}
+			let startW = psych.calculations.WTB(p, startDb, wb) * 7000;
+			let startX = map(startDb, MIN_DB, MAX_DB, 0, this.graphWidth);
+			let startY = map(startW, MIN_W, MAX_W, this.graphHeight, 0);
+			let endW = 0;
+			let endDb = psych.calculations.TWB(p, endW, wb);
+			if (endDb > MAX_DB) {
+				endDb = MAX_DB;
+				endW = psych.calculations.WTB(p, endDb, wb) * 7000;
+			}
+			let endX = map(endDb, MIN_DB, MAX_DB, 0, this.graphWidth);
+			let endY = map(endW, MIN_W, MAX_W, this.graphHeight, 0);
+			line(startX, startY, endX, endY);
+		}
+
 		
 		for (j = 10; j <= 100; j = j + 10) {
 			stroke(this.properties.defaults.primaryLineColor);
@@ -194,7 +246,6 @@ function Graph(_width, _height) {
 			endShape();
 		}
 
-		this.drawEnthalpyLabels();
 	};
 	
 	this.drawLabels = function() {
