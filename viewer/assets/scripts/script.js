@@ -5,7 +5,6 @@ var stationary = true;
 function setup() {
 	canvas = createCanvas(windowWidth, windowHeight);
 	canvas.parent("sketch-holder");
-	background(244, 249, 250);
 	graph = new Graph(width, height);
 	noLoop();
 }
@@ -13,20 +12,9 @@ function setup() {
 
 function draw() {
 	
-	background(244, 249, 250);
+	background(graph.properties.defaults.backgroundColor);
 	graph.draw();
 	
-	
-	/**
-	if (pmouseX == mouseX && pmouseY == mouseY) {
-		if (!stationary) {
-			graph.mouseMoved();
-			stationary = true;
-		}
-	} else {
-		stationary = false;
-	}
-	**/
 }
 
 function windowResized() {
