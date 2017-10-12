@@ -18,7 +18,9 @@ function Graph(_width, _height) {
 			primaryLineStrokeWeight: 1,
 			
 			secondaryLineColor: color(230),
-			secondaryLineStrokeWeight: 1
+			secondaryLineStrokeWeight: 1,
+
+			pointColor: color(182, 16, 29)
 		};
 		
 		this.properties.axes = {
@@ -334,7 +336,7 @@ function Graph(_width, _height) {
 		translate(this.properties.axes.x.width / 2, this.graphHeight + (this.properties.axes.x.height * 2 / 3));
 		fill(0);
 		noStroke();
-		text("DRY BUILB TEMPERATURE - " + String.fromCharCode(176) + "F", 0, 0);
+		text("DRY BULB TEMPERATURE - " + String.fromCharCode(176) + "F", 0, 0);
 		pop();
 		
 		
@@ -407,7 +409,7 @@ function Graph(_width, _height) {
 	}
 
 	this.drawPoints = function() {
-		fill(200, 0, 0);
+		fill(this.properties.defaults.pointColor);
 		noStroke();
 		this.points.forEach(function(point) {
 			ellipse(point.properties.graphX, point.properties.graphY, 10, 10);
