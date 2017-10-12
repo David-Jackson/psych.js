@@ -260,10 +260,42 @@ function Graph(_width, _height) {
 		
 		let MIN_W = this.properties.axes.y.min;
 		let MAX_W = this.properties.axes.y.max;
+
+		let p = psych.calculations.PFt(this.properties.elevation);
 		
-		
+		// draw WB labels
+		let min_wb = psych.calculations.BTW(p, MIN_DB, MIN_W / 7000);
+		let max_wb = psych.calculations.BTW(p, MAX_DB, MAX_W / 7000);
+		let wbIncrement = 5;
+		min_wb += wbIncrement - (min_wb % wbIncrement);
+		max_wb -= (max_wb % wbIncrement);
+		for (let wb = min_wb; wb <= max_wb; wb = wb + wbIncrement) {
+			console.log(wb);
+			textSize(12);
+			var txt = "" + wb + ((wb == max_wb - wbIncrement) ? " WET BUILB TEMPERATURE - " + String.fromCharCode(176) + "F": "");
+			var txtWidth = textWidth(txt);
+			var db1 = psych.calculations.TRB(p, 68, wb);
+			var db2 = psych.calculations.TRB(p, 0, wb);
+			var W1 = psych.calculations.WTR(p, db1, 68);
+			var W2 = psych.calculations.WTR(p, db2, 0);
+			var x1 = map(db1, MIN_DB, MAX_DB, 0, this.graphWidth);
+			var x2 = map(db2, MIN_DB, MAX_DB, 0, this.graphWidth);
+			var y1 = map(W1 * 7000, MIN_W, MAX_W, this.graphHeight, 0);
+			var y2 = map(W2 * 7000, MIN_W, MAX_W, this.graphHeight, 0);
+			var a = atan((y2 - y1)/(x2 - x1));
+			push();
+			textAlign(LEFT,CENTER);
+			translate(x1, y1);
+			rotate(a);
+			noStroke();
+			fill(244, 249, 250);
+			rect(0, -6, txtWidth, 12);
+			fill(0);
+			text(txt, 0, 0);
+			pop();
+		}
+
 		// draw RH labels
-		var p = psych.calculations.PFt(this.properties.elevation);
 		for (var rh = 10; rh < 100; rh = rh + 10) {
 			textSize(12);
 			var txt = rh + "%" + ((rh == 10) ? " RELATIVE HUMIDITY": "");
