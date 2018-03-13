@@ -19,7 +19,6 @@ function draw() {
 
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
-	background(244, 249, 250);
 	graph.resize(width, height);
 	redraw();
 }
