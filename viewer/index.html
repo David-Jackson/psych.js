@@ -110,12 +110,32 @@
 						Click around the chart to get data.
 					</div>
 				</div>
+				<div class="card-action">
+					<a data-target="settingsModal" class="modal-trigger">Settings</a>
+				</div>
 			</div>
 		</div>
 	</div>
 	<div id="sketch-holder">
 
 	</div>
+	<div id="settingsModal" class="modal modal-fixed-footer">
+		<div class="modal-content">
+			<h4>Modal Header</h4>
+			<p>A bunch of text</p>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Cancel</a>
+			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat ">Apply</a>
+		</div>
+	</div>
+
+	<script>
+		$(document).ready(function () {
+			$('.modal').modal();
+		});
+	</script>
+
 </body>
 
 </html>
