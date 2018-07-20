@@ -20,7 +20,9 @@ function Graph(_width, _height) {
 			secondaryLineColor: color(230),
 			secondaryLineStrokeWeight: 1,
 
-			pointColor: color(182, 16, 29)
+			pointColor: color(182, 16, 29),
+			heatingColor: color(182, 16, 29),
+			coolingColor: color(0, 0, 210)
 		};
 		
 		this.properties.axes = {
@@ -39,6 +41,14 @@ function Graph(_width, _height) {
 				max: 210  // grains of moisture / lb dry air
 			}
 		};
+
+
+	};
+
+	this.updateProperties = function() {
+
+		this.properties.axes.x.width = this.width;
+		this.properties.axes.x.width = this.height;
 		
 		this.graphHeight = this.height - this.properties.axes.x.height;
 		this.graphWidth = this.width- this.properties.axes.y.width;
@@ -54,10 +64,9 @@ function Graph(_width, _height) {
 			point.properties.graphX = map(point.properties.db, MIN_DB, MAX_DB, 0, this.graphWidth);
 			point.properties.graphY = map(point.properties.W * 7000, MIN_W, MAX_W, this.graphHeight, 0);
 		}, this);
-
-
 	};
 	this.initProperties();
+	this.updateProperties();
 	
 	this.moveScale = function(deltaX, deltaY) {
 		this.scale.x.min += deltaX;
@@ -69,21 +78,21 @@ function Graph(_width, _height) {
 	this.resize = function(newWidth, newHeight) {
 		this.width = newWidth;
 		this.height = newHeight;
-		this.initProperties();
+		this.updateProperties();
 		this.draw();
 	}
 	
 	this.mouseMoved = function(x, y) {
 		var pt = this.pointFromXY(x, y);
 		if (pt != null && pt.properties.rh <= 100) {
-			document.getElementById("psychStats").innerHTML = pt.toString();
+			document.getElementById("psychStats").innerHTML = pt.toHTML();
 		}
 	};
 
 	this.mousePressed = function(x, y) {
 		var pt = this.pointFromXY(x, y);
 		if (pt != null && pt.properties.rh <= 100) {
-			document.getElementById("psychStats").innerHTML = pt.toString();
+			document.getElementById("psychStats").innerHTML = pt.toHTML();
 		}
 	}
 	
@@ -333,7 +342,7 @@ function Graph(_width, _height) {
 		push();
 		textAlign(CENTER,CENTER);
 		textSize(12);
-		translate(this.properties.axes.x.width / 2, this.graphHeight + (this.properties.axes.x.height * 2 / 3));
+		translate(this.graphWidth / 2, this.graphHeight + (this.properties.axes.x.height * 2 / 3));
 		fill(0);
 		noStroke();
 		text("DRY BULB TEMPERATURE - " + String.fromCharCode(176) + "F", 0, 0);

@@ -58,12 +58,13 @@ psych.Point = function(opts) {
 		}
 	};
 	
-	this.toString = function() {
+	this.toHTML = function() {
 		return (
 			  "<p>Elevation: " + this.properties.elevation + "ft</p>"
 			+ "<p>Dry Bulb Temp: " + this.properties.db.toFixed(2) + String.fromCharCode(176) + "F</p>"
 			+ "<p>Wet Bulb Temp: " + this.properties.wb.toFixed(2) + String.fromCharCode(176) + "F</p>"
 			+ "<p>Relative Humidity: " + this.properties.rh.toFixed(2) + "%</p>"
+			+ "<p>Humidity Ratio: " + (this.properties.W * 7000).toFixed(2) + " grains/lb</p>"
 			+ "<p>Enthalpy: " + this.properties.h.toFixed(2) + " BTU/lb</p>"
 			+ "<p>Dew Point: " + this.properties.dp.toFixed(2) + String.fromCharCode(176) + "F</p>"
 		);
