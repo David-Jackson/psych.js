@@ -384,9 +384,70 @@ psych.constants = {
 	P11: 0.00001289036,
 	P12: -2.4780681E-09,
 	P13: 6.5459673,
+
+	densityOfWater: 8.337, // lb/gal
 };
 
 psych.calculations = {
+	
+	humidification: {
+		// Determines the humidification effiency between two points.
+		// Assumes that pt1 is heated/cooled to pt2's enthalpy.
+		// Thus calculates the efficiency between pt1's humidity ratio, pt2's humidity ratio, 
+		// and the humidity ratio at saturation given pt2's enthalpy.
+		efficiency(pt1, pt2) {
+			var intermediatePt = new psych.PointBuilder()
+				.withElevation(pt2.properties.elevation)
+				.withHumidityRatio(pt1.properties.W)
+				.withEnthalpy(pt2.properties.h)
+				.build();
+			var saturationPt = new psych.PointBuilder()
+				.withElevation(pt2.properties.elevation)
+				.withRelativeHumidity(100)
+				.withEnthalpy(pt2.properties.h)
+				.build();
+			return (pt2.properties.W - intermediatePt.properties.W) 
+				/ (saturationPt.properties.W - intermediatePt.properties.W); // %
+		},
+
+		evaporationRate(inletPoint, outletPoint, volumeInCFM) {
+			var density = 1 / outletPoint.properties.v; // lb/ft^3
+			var massFlowRate = density * volumeInCFM; // lb/min
+			return (outletPoint.properties.W - inletPoint.properties.W) * massFlowRate / psych.constants.densityOfWater; // gpm
+		}
+	},
+
+	cooling: {
+		capacity(inletPoint, outletPoint, volumeInCFM) {
+			var density = 1 / outletPoint.properties.v; // lb/ft^3
+			var massFlowRate = density * volumeInCFM * 60; // lb/hr
+			return -(outletPoint.properties.h - inletPoint.properties.h) * massFlowRate; // BTU/hr
+		},
+
+		// rate at which the cooling coil removes water from the air
+		condensationRate(inletPoint, outletPoint, volumeInCFM) {
+			var density = 1 / outletPoint.properties.v; // lb/ft^3
+			var massFlowRate = density * volumeInCFM; // lb/min
+			return -(outletPoint.properties.W - inletPoint.properties.W) * massFlowRate / psych.constants.densityOfWater; // gpm
+		},
+
+		flowrate(inletPoint, outletPoint, volumeInCFM, deltaTofCoolingFluid) {
+			var capacity = this.capacity(inletPoint, outletPoint, volumeInCFM);
+			var specificHeatOfWater = 1.0; // BTU / (lb * degF)
+			return capacity / (specificHeatOfWater * deltaTofCoolingFluid * psych.constants.densityOfWater * 60); // gpm
+		}
+	},
+
+	heating: {
+		capacity(inletPoint, outletPoint, volumeInCFM) {
+			if (inletPoint.properties.W != outletPoint.properties.W) {
+				console.warn("Inlet and outlet points don't have some Humidity Ratio, using inlet point's Humidity Ratio");
+			}
+			var density = 1 / outletPoint.properties.v; // lb/ft^3
+			var massFlowRate = density * volumeInCFM * 60; // lb/hr
+			return (outletPoint.properties.h - inletPoint.properties.h) * massFlowRate; // BTU/hr
+		}
+	},
 	
 	PFt(Ft) {
 		return (760 / 25.4) * Math.pow((1 - 0.0000068753 * Ft), 5.2559);
