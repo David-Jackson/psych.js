@@ -55,6 +55,17 @@ psych.Point = function(opts) {
 			}
 			this._props.dp = psych.calculations.DW(p, W);
 			return this._props.dp;
+		},
+		v() {
+			let p = this._props.p;
+			let db = this._props.db;
+			let rh = this._props.rh;
+			if (p && db && rh === null) {
+				console.error("Malformed point");
+				return null;
+			}
+			this._props.v = psych.calculations.V(p, db, rh);
+			return this._props.v;
 		}
 	};
 	
