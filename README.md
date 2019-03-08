@@ -1,5 +1,5 @@
 # psych.js
-A javascript library for psychrometric calculations. See the viewer [here](https://david-jackson.github.io/psych.js/viewer).
+A javascript library for psychrometric calculations. See the viewer [here](https://david-jackson.github.io/psych.js/viewer/interactive).
 
 ## Background
 [Psychrometry](https://en.wikipedia.org/wiki/Psychrometrics) is a field of engineering for determining the properties of gas-vapor mixtures. This is a concern when designing ventilation systems; especially for industrial paint application processes, where providing air at the proper temperature and humidity is vital for achieving the proper finish. [Psychrometric Charts](https://en.wikipedia.org/wiki/Psychrometrics#Psychrometric_charts) are extremely useful tools that give a visual representation of how changing a single property of the mixture affects other properties. Psych.js powers an elevation-adjusted [Psychrometric Chart Viewer](https://david-jackson.github.io/psych.js/viewer) for this purpose.

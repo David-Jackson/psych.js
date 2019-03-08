@@ -12,7 +12,7 @@ function setup() {
 
 function draw() {
 	
-	background(graph.properties.defaults.backgroundColor);
+	background(255);
 	graph.draw();
 	
 }
@@ -21,10 +21,6 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 	graph.resize(width, height);
 	redraw();
-}
-
-function mouseMoved() {
-	//graph.mouseMoved(mouseX, mouseY);
 }
 
 function mousePressed() {
