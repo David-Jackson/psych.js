@@ -11,10 +11,10 @@ function setup() {
 
 
 function draw() {
-	
+
 	background(255);
 	graph.draw();
-	
+
 }
 
 function windowResized() {
@@ -31,6 +31,6 @@ function toggleUI(toggle) {
 	console.log(toggle);
 }
 
-window.ondblclick = function() {
+window.ondblclick = function () {
 	graph.addPointFromXY(mouseX, mouseY);
 }
