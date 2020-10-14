@@ -14,6 +14,10 @@ function Graph(_width, _height) {
 				stroke: color(0, 255, 0),
 				fill: color(0, 255, 0)
 			},
+			red: {
+				stroke: color(255, 0, 0),
+				fill: color(255, 0, 0)
+			},
 		},
 		lines: {
 			grey: {
