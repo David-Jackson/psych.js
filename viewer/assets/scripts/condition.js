@@ -309,7 +309,7 @@ class CoolingCoil extends AirProcess {
         if (this.inlet.properties.db != this.actualOutlet.properties.db) {
             graph.addPoints(graph.colors.points.grey, this.inlet, this.actualOutlet);
 
-            if (this.inlet.properties.W <= this.desiredOutlet.properties.W) {
+            if (this.inlet.properties.W <= this.actualOutlet.properties.W) {
                 graph.addLine(graph.colors.lines.blue, [this.inlet, this.actualOutlet]);
             } else {
                 this.saturationPoint = new psych.PointBuilder()
