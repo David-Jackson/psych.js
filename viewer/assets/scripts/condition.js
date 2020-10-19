@@ -75,6 +75,39 @@ class AirUnit {
         this.processes.forEach(p => p.forEach(equipment => equipment.draw()));
     }
 
+    #mergeLoads(load1, load2) {
+        var res = Object.assign({}, load1);
+        for (var item in load2) {
+            if (!res[item]) {
+                res[item] = load2[item];
+            } else {
+                res[item] = Math.max(res[item], load2[item]);
+            }
+        }
+        return res;
+    }
+
+    getLoads() {
+        if (this.processes) {
+            var spec = {volume: this.volume};
+
+            this.processes.forEach(process => {
+                var pastSections = {};
+                process.forEach(section => {
+                    var sectionName = section.constructor.name;
+                    if (!pastSections[sectionName]) pastSections[sectionName] = 0;
+                    pastSections[sectionName]++;
+                    sectionName = sectionName + "_" + pastSections[sectionName];
+
+                    if (!spec[sectionName]) spec[sectionName] = {};
+                    spec[sectionName] = this.#mergeLoads(spec[sectionName], section.loads);
+                });
+            });
+
+            return spec;
+        }
+    }
+
 }
 
 class AirProcess {

@@ -294,3 +294,5 @@ boothASU.draw();
 
 redraw();
 ```
+
+After running the `.calculate()` method on an `AirUnit`, the `.getLoads()` method can be called to access all of the loads from each processs in the `AirUnit`.
