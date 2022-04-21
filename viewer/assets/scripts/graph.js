@@ -171,6 +171,10 @@ function Graph(_width, _height) {
 	}
 
 	this.mouseMoved = function (x, y) {
+		// this.listeners.mouseMoved.reduce((statsUpdated, callback) => {
+		// 	var returnVal = callback();
+		// 	if (returnVal)
+		// })
 		this.listeners.mouseMoved.forEach(callback => callback(x, y));
 
 		var pt = this.pointFromXY(x, y);
@@ -328,8 +332,8 @@ function Graph(_width, _height) {
 		}
 
 		// Primary Enthalpy Lines
-		// let intersectionLine = graph.helpers.lineFromTwoPoints(createVector(700, 0), createVector(0, 700));
-		// pg.line(700, 0, 0, 700);
+		// let intersectionLine = graph.helpers.lineFromTwoPoints(
+		// 	createVector(1000, 0), createVector(0, 1000));
 
 		let minH = psych.calculations.HTW(MIN_DB, MIN_W / 7000);
 		let maxH = psych.calculations.HTW(MAX_DB, MAX_W / 7000);
@@ -353,6 +357,7 @@ function Graph(_width, _height) {
 			// pg.line(startX, startY, pt.x, pt.y);
 			// console.log(line);
 		}
+		
 
 		// Primary Wet Bulb Lines
 		let min_wb = psych.calculations.BTW(p, MIN_DB, MIN_W / 7000);
@@ -590,9 +595,10 @@ function Graph(_width, _height) {
 		return res;
 	}
 
-	this.addPoint = function (style, point) {
+	this.addPoint = function (style, point, text = null) {
 		this.calculatePosition(point);
 		point.style = style;
+		point.style.text = text;
 		this.points.push(point);
 	}
 
@@ -642,10 +648,21 @@ function Graph(_width, _height) {
 			var fillColor = this.tryToAssign(point.style.fill, this.properties.defaults.pointColor);
 			var strokeColor = this.tryToAssign(point.style.stroke, this.properties.defaults.pointStroke);
 			var lineWeight = this.tryToAssign(point.style.weight, this.properties.defaults.pointWeight);
+			var pointText = point.style.text;
 			(fillColor == null) ? pg.noFill(): pg.fill(fillColor);
 			(strokeColor == null) ? pg.noStroke(): pg.stroke(strokeColor);
 			pg.strokeWeight(lineWeight);
 			pg.ellipse(point.properties.graphX, point.properties.graphY, radius, radius);
+
+			if (pointText != null) {
+				pg.noStroke();
+				pg.fill(255);
+				pg.textAlign(CENTER, CENTER);
+				pg.textSize(radius - 2);
+				pg.text(pointText, point.properties.graphX, point.properties.graphY);
+			}
+
+
 		}, this);
 	}
 
@@ -749,7 +766,9 @@ function Graph(_width, _height) {
 	}
 
 	this.clearListeners = function(name) {
-		this.listeners[name] = [];
+		if (this.listeners[name]) {
+			this.listeners[name] = [];
+		}
 	}
 
 	this.clearAllListeners = function() {

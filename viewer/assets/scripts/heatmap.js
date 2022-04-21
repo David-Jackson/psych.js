@@ -1353,9 +1353,12 @@ function parseHeatmapFile(file) {
     });
 }
 
+
+var historicalData = null;
+
 // take results from CSV parse and create a heatmap
 function processHeatmap(results) {
-    console.log("Processing", results.length, "results", this)
+    console.log("Processing", results.length, "results", results);
     var dataObj = results
         .map(x => {
             return {
@@ -1380,6 +1383,7 @@ function processHeatmap(results) {
         }
     }
     console.log(data);
+    historicalData = data;
 
     var heatmapData = [];
 
@@ -1435,6 +1439,8 @@ function processHeatmap(results) {
         data: heatmapData,
         max: maxOcc
     });
+
+    console.log("Heatmap Instance:", heatmapInstance)
 
     heatmapContainer.style.position = "absolute";
     heatmapContainer.style.top = "0px";
