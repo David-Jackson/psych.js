@@ -132,6 +132,9 @@ function Graph(_width, _height) {
 			lines: createGraphics(this.graphWidth, this.graphHeight),
 			points: createGraphics(this.graphWidth, this.graphHeight)
 		};
+		for (var layerName in this.layers) {
+			this.layers[layerName].pixelDensity(1);
+		}
 	}
 
 	this.clearLayers = function () {
