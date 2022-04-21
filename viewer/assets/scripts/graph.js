@@ -160,6 +160,8 @@ function Graph(_width, _height) {
 	};
 
 	this.resize = function (newWidth, newHeight) {
+		this.listeners.resized.forEach(callback => callback(newWidth, newHeight));
+
 		this.width = newWidth;
 		this.height = newHeight;
 		this.updateProperties();
@@ -169,6 +171,8 @@ function Graph(_width, _height) {
 	}
 
 	this.mouseMoved = function (x, y) {
+		this.listeners.mouseMoved.forEach(callback => callback(x, y));
+
 		var pt = this.pointFromXY(x, y);
 		if (pt != null && pt.properties.rh <= 100) {
 			document.getElementById("psychStats").innerHTML = pt.toHTML();
@@ -178,6 +182,8 @@ function Graph(_width, _height) {
 	};
 
 	this.mousePressed = function (x, y) {
+		this.listeners.mousePressed.forEach(callback => callback(x, y));
+
 		var pt = this.pointFromXY(x, y);
 		if (pt != null && pt.properties.rh <= 100) {
 			document.getElementById("psychStats").innerHTML = pt.toHTML();
@@ -732,4 +738,23 @@ function Graph(_width, _height) {
 		}
 	}
 
+	this.listeners = {
+		"mouseMoved": [],
+		"mousePressed": [],
+		"resized": [],
+	}
+
+	this.addListener = function(name, callback) {
+		this.listeners[name].push(callback)
+	}
+
+	this.clearListeners = function(name) {
+		this.listeners[name] = [];
+	}
+
+	this.clearAllListeners = function() {
+		for (var name in this.listeners) {
+			this.listeners[name] = [];
+		}
+	}
 }
