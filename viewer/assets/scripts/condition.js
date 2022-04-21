@@ -11,16 +11,18 @@ var DEFAULT_HEATING_FLUID_DELTA_T = 20;
 
 class AirUnit {
     constructor(inlets, outlets, volume, equipment) {
-        if (inlets.length < outlets.length) {
-            console.error("Not designed to have more outlet setpoints than inlet setpoints", inlets, outlets);
-            return;
-        }
         if (inlets.length > 2 || outlets.length > 2) {
             console.error("Not designed to have more than two inlet or outlet setpoints", inlets, outlets);
             return;
         }
-        while (outlets.length != inlets.length) {
-            outlets.push(outlets[0]);
+        if (inlets.length < outlets.length) {
+            while (outlets.length != inlets.length) {
+                inlets.push(inlets[0]);
+            }
+        } else {
+            while (outlets.length != inlets.length) {
+                outlets.push(outlets[0]);
+            }
         }
         this.inlets = inlets;
         this.outlets = outlets;
@@ -159,48 +161,34 @@ class Burner extends AirProcess {
             .withElevation(this.inlet)
             .withHumidityRatio(this.inlet);
 
-        if (Math.abs(this.inlet.properties.W - this.desiredOutlet.properties.W) < 1e-7 &&
-            this.inlet.properties.db < this.desiredOutlet.properties.db) {
-            // Heat to desiredOutlet Dry Bulb
-            pointBuilder.withDryBulb(this.desiredOutlet);
-        } else if (this.inlet.properties.W < this.desiredOutlet.properties.W &&
+        if (this.isDownstream(Humidifier) && 
+            this.inlet.properties.W < this.desiredOutlet.properties.W &&
             this.inlet.properties.h < this.desiredOutlet.properties.h) {
-            // Heat to desiredOutlet Enthalpy
-            pointBuilder.withEnthalpy(this.desiredOutlet);
+
+                // heat to enthalpy
+                pointBuilder.withEnthalpy(this.desiredOutlet);
+
+        } else if (this.isDownstream(Dehumidifier) &&
+            this.inlet.properties.W > this.desiredOutlet.properties.W &&
+            this.inlet.properties.h < this.desiredOutlet.properties.h) {
+
+                // heat to enthalpy
+                pointBuilder.withEnthalpy(this.desiredOutlet);
+
+        } else if (this.inlet.properties.db < this.desiredOutlet.properties.db &&
+            !(this.isDownstream(CoolingCoil) && 
+                (this.isDownstream(HeatingCoil, Burner)))) {
+
+                    // heat to dry bulb
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+
         } else {
+
             // Do nothing
             pointBuilder.withDryBulb(this.inlet);
+
         }
-        this.actualOutlet = pointBuilder.build();
 
-        this.loads = {
-            power: psych.calculations.heating.capacity(
-                this.inlet, this.actualOutlet, this.volume)
-        };
-
-        return this.actualOutlet;
-    }
-
-    draw() {
-        if (this.inlet.properties.db != this.actualOutlet.properties.db) {
-            graph.addPoints(graph.colors.points.grey, this.inlet, this.actualOutlet);
-            graph.addLine(graph.colors.lines.red, [this.inlet, this.actualOutlet]);
-        }
-    }
-}
-
-class OvenCoolerBurner extends AirProcess {
-    calculate() {
-        var pointBuilder = new psych.PointBuilder()
-            .withElevation(this.inlet)
-            .withHumidityRatio(this.inlet);
-
-        if (this.inlet.properties.db < this.desiredOutlet.properties.db) {
-            // Heat to desiredOutlet Dry Bulb
-            pointBuilder.withDryBulb(this.desiredOutlet);
-        } else {
-            pointBuilder.withDryBulb(this.inlet);
-        }
         this.actualOutlet = pointBuilder.build();
 
         this.loads = {
@@ -244,6 +232,21 @@ class Humidifier extends AirProcess {
         }
         this.actualOutlet = pointBuilder.build();
 
+        if (this.actualOutlet.properties.rh > 100) {
+            this.actualOutlet = new psych.PointBuilder()
+                .withElevation(this.inlet)
+                .withEnthalpy(this.inlet)
+                .withRelativeHumidity(100)
+                .build();
+        } else if (this.actualOutlet.properties.W < this.inlet.properties.W) {
+            // humidifiers do no remove moisture from the airstream
+            this.actualOutlet = new psych.PointBuilder()
+                .withElevation(this.inlet)
+                .withDryBulb(this.inlet)
+                .withHumidityRatio(this.inlet)
+                .build();
+        }
+
         this.loads = {
             efficiency: psych.calculations.humidification.efficiency(
                 this.inlet, this.actualOutlet),
@@ -263,6 +266,11 @@ class Humidifier extends AirProcess {
         }
     }
 }
+
+class Dehumidifier extends AirProcess {
+
+}
+
 class CoolingCoil extends AirProcess {
     constructor(inlet, desiredOutlet, volume = 0, downstreamProcesses = [], deltaTofCoolingFluid = DEFAULT_COOLING_FLUID_DELTA_T) {
         super(inlet, desiredOutlet, volume, downstreamProcesses);
@@ -285,7 +293,15 @@ class CoolingCoil extends AirProcess {
                         .build()
                 }
             } else {
-                this.actualOutlet = this.inlet;
+                if (this.isDownstream(Humidifier)) {
+                    this.actualOutlet = this.inlet;
+                } else {
+                    this.actualOutlet = new psych.PointBuilder()
+                        .withElevation(this.inlet)
+                        .withHumidityRatio(this.inlet)
+                        .withDryBulb(this.desiredOutlet)
+                        .build()
+                }
             }
         } else if (this.inlet.properties.W == this.desiredOutlet.properties.W) {
             this.actualOutlet = new psych.PointBuilder()
@@ -300,7 +316,7 @@ class CoolingCoil extends AirProcess {
                     .withHumidityRatio(this.desiredOutlet)
                     .withRelativeHumidity(100)
                     .build()
-            } else {
+            } else if (this.inlet.properties.db > this.desiredOutlet.properties.db) {
                 this.actualOutlet = new psych.PointBuilder()
                     .withElevation(this.inlet)
                     .withHumidityRatio(this.inlet)
@@ -313,6 +329,8 @@ class CoolingCoil extends AirProcess {
                         .withRelativeHumidity(100)
                         .build();
                 }
+            } else {
+                this.actualOutlet = this.inlet;
             }
         } else {
             if (this.isDownstream(Burner, HeatingCoil)) {
