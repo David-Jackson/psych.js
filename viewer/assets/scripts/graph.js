@@ -58,6 +58,7 @@ function Graph(_width, _height) {
 			axesSize: 48,
 
 			backgroundColor: color(255),
+			textColor: color(0),
 
 			primaryLineColor: color(161, 177, 192),
 			primaryLineStrokeWeight: 1,
@@ -425,14 +426,14 @@ function Graph(_width, _height) {
 				push();
 				noStroke();
 				textAlign(RIGHT, BOTTOM);
-				fill(0);
+				fill(this.properties.defaults.textColor);
 				text(txt.split(" ")[0], x2, y2);
 				textAlign(LEFT, CENTER);
 				translate(x1, y1);
 				rotate(a);
 				fill(this.properties.defaults.backgroundColor);
 				rect(0, -6, txtWidth, 12);
-				fill(0);
+				fill(this.properties.defaults.textColor);
 				text(txt, 0, 0);
 				pop();
 			}
@@ -459,8 +460,8 @@ function Graph(_width, _height) {
 				rotate(a);
 				noStroke();
 				fill(this.properties.defaults.backgroundColor);
-				rect(0, -10, txtWidth, 16 + 4);
-				fill(0);
+				rect(0, -10, txtWidth, 16);
+				fill(this.properties.defaults.textColor);
 				text(txt, 0, 0);
 				pop();
 			}
@@ -472,7 +473,7 @@ function Graph(_width, _height) {
 			textAlign(CENTER, CENTER);
 			textSize(12);
 			translate(this.graphWidth / 2, this.graphHeight + (this.properties.axes.x.height * 2 / 3));
-			fill(0);
+			fill(this.properties.defaults.textColor);
 			noStroke();
 			text("DRY BULB TEMPERATURE - " + String.fromCharCode(176) + "F", 0, 0);
 			pop();
@@ -485,7 +486,7 @@ function Graph(_width, _height) {
 			with(pg) {
 				push();
 				translate(x, y);
-				fill(0);
+				fill(this.properties.defaults.textColor);
 				noStroke();
 				textAlign(CENTER, CENTER);
 				text(db, 0, 0);
@@ -500,7 +501,7 @@ function Graph(_width, _height) {
 			textSize(12);
 			translate(this.graphWidth + (this.properties.axes.y.width * 2 / 3), this.graphHeight / 2);
 			rotate(-HALF_PI);
-			fill(0);
+			fill(this.properties.defaults.textColor);
 			noStroke();
 			text("HUMIDITY RATIO - GRAINS OF MOISTURE PER POUND OF DRY AIR", 0, 0);
 			pop();
@@ -513,7 +514,7 @@ function Graph(_width, _height) {
 			with(pg) {
 				push();
 				translate(x, y);
-				fill(0);
+				fill(this.properties.defaults.textColor);
 				noStroke();
 				textAlign(CENTER, CENTER);
 				text(W, 0, 0);
