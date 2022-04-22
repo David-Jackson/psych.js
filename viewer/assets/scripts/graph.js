@@ -60,7 +60,7 @@ function Graph(_width, _height) {
 			backgroundColor: color(255),
 			textColor: color(0),
 
-			primaryLineColor: color(161, 177, 192),
+			primaryLineColor: color(149, 161, 175),
 			primaryLineStrokeWeight: 1,
 
 			secondaryLineColor: color(230),
