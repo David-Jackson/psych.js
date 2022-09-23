@@ -7,7 +7,7 @@
 // processes = [Cooling, Heating, Humidifying, Fan]
 
 var DEFAULT_COOLING_FLUID_DELTA_T = 20;
-var DEFAULT_HEATING_FLUID_DELTA_T = 20;
+var DEFAULT_HEATING_FLUID_DELTA_T = 60;
 
 class AirUnit {
     constructor(inlets, outlets, volume, equipment) {
