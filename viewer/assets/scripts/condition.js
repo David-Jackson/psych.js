@@ -360,71 +360,80 @@ class CoolingCoil extends AirProcess {
         this.deltaTofCoolingFluid = deltaTofCoolingFluid;
     }
     calculate() {
-        if (this.inlet.properties.W < this.desiredOutlet.properties.W) {
-            if (this.inlet.properties.h > this.desiredOutlet.properties.h) {
-                if (this.isDownstream(Humidifier)) {
+
+        if (this.inlet.properties.db > this.desiredOutlet.properties.db) { // DB is higher than outlet
+
+            if (this.inlet.properties.W > this.desiredOutlet.properties.W) { // DB and W is higher than outlet
+
+                if (this.isDownstream(Burner, HeatingCoil)) { // DB and W is higher than outlet, heating is downstream
+                    // Cool to saturation, reheat will happen downstream
                     this.actualOutlet = new psych.PointBuilder()
                         .withElevation(this.inlet)
-                        .withHumidityRatio(this.inlet)
-                        .withEnthalpy(this.desiredOutlet)
-                        .build()
-                } else {
-                    this.actualOutlet = new psych.PointBuilder()
-                        .withElevation(this.inlet)
-                        .withHumidityRatio(this.inlet)
-                        .withDryBulb(this.desiredOutlet)
-                        .build()
-                }
-            } else {
-                if (this.isDownstream(Humidifier)) {
-                    this.actualOutlet = this.inlet;
-                } else {
-                    this.actualOutlet = new psych.PointBuilder()
-                        .withElevation(this.inlet)
-                        .withHumidityRatio(this.inlet)
-                        .withDryBulb(this.desiredOutlet)
-                        .build()
-                }
-            }
-        } else if (this.inlet.properties.W == this.desiredOutlet.properties.W) {
-            this.actualOutlet = new psych.PointBuilder()
-                .withElevation(this.inlet)
-                .withHumidityRatio(this.inlet)
-                .withDryBulb(this.desiredOutlet)
-                .build()
-        } else if (this.inlet.properties.h > this.desiredOutlet.properties.h) {
-            if (this.isDownstream(Burner, HeatingCoil)) {
-                this.actualOutlet = new psych.PointBuilder()
-                    .withElevation(this.inlet)
-                    .withHumidityRatio(this.desiredOutlet)
-                    .withRelativeHumidity(100)
-                    .build()
-            } else if (this.inlet.properties.db > this.desiredOutlet.properties.db) {
-                this.actualOutlet = new psych.PointBuilder()
-                    .withElevation(this.inlet)
-                    .withHumidityRatio(this.inlet)
-                    .withDryBulb(this.desiredOutlet)
-                    .build();
-                if (this.actualOutlet.properties.rh > 100) {
-                    this.actualOutlet = new psych.PointBuilder()
-                        .withElevation(this.inlet)
-                        .withDryBulb(this.desiredOutlet)
+                        .withHumidityRatio(this.desiredOutlet)
                         .withRelativeHumidity(100)
-                        .build();
+                        .build()
+                } else { // DB and W is higher than outlet, heating is NOT downstream
+                    // Cool just to the DB
+                    this.actualOutlet = new psych.PointBuilder()
+                        .withElevation(this.inlet)
+                        .withHumidityRatio(this.inlet)
+                        .withDryBulb(this.desiredOutlet)
+                        .build()
+                    if (this.actualOutlet.properties.rh > 100) { // Check if cooling to DB hits saturation
+                        this.actualOutlet = new psych.PointBuilder()
+                            .withElevation(this.inlet)
+                            .withDryBulb(this.desiredOutlet)
+                            .withRelativeHumidity(100)
+                            .build()
+                    }
                 }
-            } else {
+
+            } else { // DB is higher than outlet, W is lower than outlet
+                if (this.isDownstream(Humidifier)) { // DB is higher than outlet, W is lower than outlet, humidification is downstream
+
+                    if (this.inlet.properties.h > this.desiredOutlet.properties.h) { // DB is higher than outlet, W is lower than outlet, humidification is downstream, and enthalpy is higher than outlet
+                        // Cool to enthalpy so humidifier can take it the rest of the way
+                        this.actualOutlet = new psych.PointBuilder()
+                            .withElevation(this.inlet)
+                            .withHumidityRatio(this.inlet)
+                            .withEnthalpy(this.desiredOutlet)
+                            .build()
+                    } else { // DB is higher than outlet, W is lower than outlet, humidification is downstream, and enthalpy is lower than outlet
+                        // Do nothing, humidifier will take it closer to the desired setpoint
+                        this.actualOutlet = this.inlet; 
+                    }
+
+                } else { // DB is higher than outlet, W is lower than outlet, humidification is NOT downstream
+                    // Cool just to the DB
+                    this.actualOutlet = new psych.PointBuilder()
+                        .withElevation(this.inlet)
+                        .withHumidityRatio(this.inlet)
+                        .withDryBulb(this.desiredOutlet)
+                        .build()
+                }
+            }
+
+        } else { // DB is lower than outlet
+
+            if (this.inlet.properties.W > this.desiredOutlet.properties.W) { // DB is lower than outlet, W is higher than outlet
+                
+                if (this.isDownstream(Burner, HeatingCoil)) { // DB is lower than outlet, W is higher than outlet, heating is downstream
+                    // Cool to saturation, reheat will happen downstream
+                    this.actualOutlet = new psych.PointBuilder()
+                        .withElevation(this.inlet)
+                        .withHumidityRatio(this.desiredOutlet)
+                        .withRelativeHumidity(100)
+                        .build()
+                } else { // DB is lower than outlet, W is higher than outlet, heating is NOT downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            } else { // DB and W is lower than outlet
+                // Do nothing
                 this.actualOutlet = this.inlet;
             }
-        } else {
-            if (this.isDownstream(Burner, HeatingCoil)) {
-                this.actualOutlet = new psych.PointBuilder()
-                    .withElevation(this.inlet)
-                    .withHumidityRatio(this.desiredOutlet)
-                    .withRelativeHumidity(100)
-                    .build()
-            } else {
-                this.actualOutlet = this.inlet;
-            }
+
         }
 
         this.loads = {
