@@ -311,39 +311,60 @@ class Humidifier extends AirProcess {
             .withElevation(this.inlet)
             .withEnthalpy(this.inlet);
 
-        if (this.inlet.properties.h >= this.desiredOutlet.properties.h) {
-            if (this.isDownstream(CoolingCoil)) {
-                if (this.inlet.properties.W >= this.desiredOutlet.properties.W) {
-                    pointBuilder.withDryBulb(this.inlet); // do nothing
-                } else {
-                    pointBuilder.withHumidityRatio(this.desiredOutlet);
-                }
-            } else {
-                pointBuilder.withDryBulb(this.desiredOutlet);
-            }
-        } else {
-            if (this.inlet.properties.W < this.desiredOutlet.properties.W) {
-                pointBuilder.withHumidityRatio(this.desiredOutlet);
-            } else {
-                pointBuilder.withDryBulb(this.inlet); // do nothing
-            }
-        }
-        this.actualOutlet = pointBuilder.build();
+        if (this.inlet.properties.h > this.desiredOutlet.properties.h) { // enthalpy is higher than outlet
 
-        if (this.actualOutlet.properties.rh > 100) {
+            if (this.isDownstream(CoolingCoil)) { // enthalpy is higher than outlet, cooling is downstream
+
+                if (this.inlet.properties.W < this.desiredOutlet.properties.W) { // enthalpy is higher than outlet, W is lower than outlet, cooling is downstream
+                    // Humidify to W
+                    pointBuilder.withHumidityRatio(this.desiredOutlet);
+                } else { // enthalpy and W is higher than outlet, cooling is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            } else { // enthalpy is higher than outlet, cooling is NOT downstream
+
+                if (this.inlet.properties.db > this.desiredOutlet.properties.db) { // enthalpy and DB is higher than outlet, cooling is NOT downstream
+                    // Humidify to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // enthalpy is higher than outlet, DB is lower than outlet, cooling is NOT downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+            }
+
+        } else { // enthalpy is lower than outlet
+
+            if (this.isDownstream(Burner, HeatingCoil)) { // enthalpy is lower than outlet, heating is downstream
+                // Humidify to W
+                pointBuilder.withHumidityRatio(this.desiredOutlet);
+            } else { // enthalpy is lower than outlet, heating is NOT downstream
+
+                if (this.inlet.properties.db > this.desiredOutlet.properties.db) { // enthalpy is lower than outlet, DB is higher than outlet, heating is NOT downstream
+                    // Humidify to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // enthalpy and DB is lower than outlet, heating is NOT downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            }
+
+        }
+
+        if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
+
+        if (this.actualOutlet.properties.rh > 100) { 
+            // we wanted to humidify more than we can, so we're capped to 100% RH 
+            // (TODO: however in reality, we are limited to a humidifier's saturation efficiency. 
+            // So it would be interesting to implement a limit here somehow)
             this.actualOutlet = new psych.PointBuilder()
-                .withElevation(this.inlet)
-                .withEnthalpy(this.inlet)
+                .withElevation(this.actualOutlet)
+                .withEnthalpy(this.actualOutlet)
                 .withRelativeHumidity(100)
                 .build();
-        } else if (this.actualOutlet.properties.W < this.inlet.properties.W) {
-            // humidifiers do no remove moisture from the airstream
-            this.actualOutlet = new psych.PointBuilder()
-                .withElevation(this.inlet)
-                .withDryBulb(this.inlet)
-                .withHumidityRatio(this.inlet)
-                .build();
-        }
+        } 
 
         this.loads = {
             efficiency: psych.calculations.humidification.efficiency(
