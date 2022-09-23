@@ -339,6 +339,130 @@ psych.PointBuilder = function () {
 	}
 }
 
+psych.Line = window.psych.Line || {};
+
+psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree = 100) {
+
+	this.style = style;
+	this.inputPoint1 = pt1;
+	this.inputPoint2 = pt2;
+
+	this.STEPS = Math.abs(
+		this.inputPoint2.properties.db - this.inputPoint1.properties.db
+	) * segmentsPerDegree;
+
+	// just in case the two db temps are the same
+	if (this.STEPS == 0) {
+		this.STEPS = Math.abs(
+			this.inputPoint2.properties.rh - this.inputPoint1.properties.rh
+		) * segmentsPerDegree;
+	}
+
+
+	this.calculate = function() {
+        var deltaDB = (this.inputPoint2.properties.db - this.inputPoint1.properties.db) / this.STEPS;
+        var deltaRH = (this.inputPoint2.properties.rh - this.inputPoint1.properties.rh) / this.STEPS;
+        this.linePoints = [];
+        for (let i = 0; i <= this.STEPS; i++) {
+            var pt = new psych.PointBuilder()
+                .withElevation(this.inputPoint1)
+                .withDryBulb(this.inputPoint1.properties.db + (i * deltaDB))
+                .withRelativeHumidity(this.inputPoint1.properties.rh + (i * deltaRH))
+                .build();
+            this.linePoints.push(pt);
+        }
+    }
+
+    this.draw = function() {
+        graph.addLine(graph.colors.lines.orange, this.linePoints);
+    }
+	
+	this.findIntersection = function(propertyName, value) {
+
+        if (!this.isBetween(propertyName, value)) {
+            console.log("Cannot find intersection: a", propertyName, "of", value, "is not within line");
+            return;
+        }
+
+        var ITERATION_LIMIT = 1000;
+        var iterCount = 0;
+
+        var leftIndex = 0;
+        var rightIndex = this.linePoints.length - 1;
+        var midIndex = Math.floor((leftIndex + rightIndex) / 2);
+
+        var arrayOrderAdjustment = 1;
+        // swap the comparator if the line is "reversed" (ordered largest to smallest)
+        if (this.linePoints[rightIndex].properties[propertyName] < this.linePoints[leftIndex].properties[propertyName]) {
+            arrayOrderAdjustment = -1;
+        }
+        
+        while (rightIndex - leftIndex > 1) {
+            
+            iterCount++;
+            if (iterCount > ITERATION_LIMIT) break;
+            
+            if ((arrayOrderAdjustment * value) < (arrayOrderAdjustment * this.linePoints[midIndex].properties[propertyName])) {
+                rightIndex = midIndex;
+            } else {
+                leftIndex = midIndex;
+            }
+            
+            midIndex = Math.floor((leftIndex + rightIndex) / 2);
+
+        }
+
+
+        var guessPoint = this.linePoints[midIndex];
+        
+        graph.addPoints(graph.colors.points.green, guessPoint);
+        return guessPoint;
+    }
+
+    this.isBetween = function(propertyName, value, pt1 = this.inputPoint1, pt2 = this.inputPoint2) {
+        if (!pt1.properties[propertyName] || !pt2.properties[propertyName]) {
+            console.error("Invalid property name", propertyName, "in", pt1, pt2);
+        }
+        var pt1Val = pt1.properties[propertyName];
+        var pt2Val = pt2.properties[propertyName];
+        var maxVal = Math.max(pt1Val, pt2Val);
+        var minVal = Math.min(pt1Val, pt2Val);
+
+        return minVal <= value && value <= maxVal;
+    }
+
+	this.isLessThan = function(propertyName, value, pt1 = this.inputPoint1, pt2 = this.inputPoint2) {
+        if (!pt1.properties[propertyName] || !pt2.properties[propertyName]) {
+            console.error("Invalid property name", propertyName, "in", pt1, pt2);
+        }
+		return Math.min(pt1.properties[propertyName], pt2.properties[propertyName]) > value;
+	}
+	
+	this.isGreaterThan = function(propertyName, value, pt1 = this.inputPoint1, pt2 = this.inputPoint2) {
+        if (!pt1.properties[propertyName] || !pt2.properties[propertyName]) {
+            console.error("Invalid property name", propertyName, "in", pt1, pt2);
+        }
+		return Math.max(pt1.properties[propertyName], pt2.properties[propertyName]) < value;
+	}
+
+	this.getPointOfHighest = function(propertyName) {
+		if (this.inputPoint1.properties[propertyName] > this.inputPoint2.properties[propertyName]) {
+			return this.inputPoint1;
+		} else {
+			return this.inputPoint2
+		}
+	}
+
+	this.getPointOfLowest = function(propertyName) {
+		if (this.inputPoint1.properties[propertyName] < this.inputPoint2.properties[propertyName]) {
+			return this.inputPoint1;
+		} else {
+			return this.inputPoint2
+		}
+	}
+}
+
+
 psych.MixedFlow = function (pt1, pt2) {
 	this.requiredParameters = ["elevation", "db", "W", "volume", "v"];
 	this.requiredParameters.forEach(function (p) {
