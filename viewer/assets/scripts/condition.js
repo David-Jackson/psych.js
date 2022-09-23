@@ -244,35 +244,50 @@ class Burner extends AirProcess {
             .withElevation(this.inlet)
             .withHumidityRatio(this.inlet);
 
-        if (this.isDownstream(Humidifier) && 
-            this.inlet.properties.W < this.desiredOutlet.properties.W &&
-            this.inlet.properties.h < this.desiredOutlet.properties.h) {
+        if (this.inlet.properties.W < this.desiredOutlet.properties.W) { // W is lower than outlet
 
-                // heat to enthalpy
-                pointBuilder.withEnthalpy(this.desiredOutlet);
+            if (this.isDownstream(Humidifier)) { // W is lower than outlet, humidifier is downstream
 
-        } else if (this.isDownstream(Dehumidifier) &&
-            this.inlet.properties.W > this.desiredOutlet.properties.W &&
-            this.inlet.properties.h < this.desiredOutlet.properties.h) {
+                if (this.inlet.properties.h < this.desiredOutlet.properties.h) { // W and h is lower than outlet, humidifier is downstream
+                    // Heat to enthalpy, humidifier will take it to setpoint
+                    pointBuilder.withEnthalpy(this.desiredOutlet);
+                } else { // W is lower than outlet, humidifier is downstream, but h is higher than outlet
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
 
-                // heat to enthalpy
-                pointBuilder.withEnthalpy(this.desiredOutlet);
+            } else { // W is lower than outlet, humidifier is NOT downstream
 
-        } else if (this.inlet.properties.db < this.desiredOutlet.properties.db &&
-            !(this.isDownstream(CoolingCoil) && 
-                (this.isDownstream(HeatingCoil, Burner)))) {
-
-                    // heat to dry bulb
+                if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // W and DB is lower than outlet, humidifier is NOT downstream
+                    // Heat to DB
                     pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // W is lower than outlet, humidifier is NOT downstream, but DB is higher than outlet
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
 
-        } else {
+            }
 
-            // Do nothing
-            pointBuilder.withDryBulb(this.inlet);
+        } else { // W is higher than outlet
+
+            if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // W is higher than outlet, DB is lower than outlet
+
+                if (this.isDownstream(CoolingCoil) && (this.isDownstream(HeatingCoil, Burner))) { // W is higher than outlet, DB is lower than outlet, cooling and reheat is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                } else { // W is higher than outlet, DB is lower than outlet, cooling and reheat is NOT downstream
+                    // Heat to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                }
+
+            } else {
+                // Do nothing
+                this.actualOutlet = this.inlet;
+            }
 
         }
 
-        this.actualOutlet = pointBuilder.build();
+        if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
 
         this.loads = {
             power: psych.calculations.heating.capacity(
@@ -475,24 +490,56 @@ class HeatingCoil extends AirProcess {
         this.deltaTofHeatingFluid = deltaTofHeatingFluid;
     }
     calculate() {
-
+        // logic copied from Burner.calculate()
         var pointBuilder = new psych.PointBuilder()
             .withElevation(this.inlet)
             .withHumidityRatio(this.inlet);
 
-        if (Math.abs(this.inlet.properties.W - this.desiredOutlet.properties.W) < 1e-7 &&
-            this.inlet.properties.db < this.desiredOutlet.properties.db) {
-            // Heat to desiredOutlet Dry Bulb
-            pointBuilder.withDryBulb(this.desiredOutlet);
-        } else if (this.inlet.properties.W < this.desiredOutlet.properties.W &&
-            this.inlet.properties.h < this.desiredOutlet.properties.h) {
-            // Heat to desiredOutlet Enthalpy
-            pointBuilder.withEnthalpy(this.desiredOutlet);
-        } else {
-            // Do nothing
-            pointBuilder.withDryBulb(this.inlet);
+        if (this.inlet.properties.W < this.desiredOutlet.properties.W) { // W is lower than outlet
+
+            if (this.isDownstream(Humidifier)) { // W is lower than outlet, humidifier is downstream
+
+                if (this.inlet.properties.h < this.desiredOutlet.properties.h) { // W and h is lower than outlet, humidifier is downstream
+                    // Heat to enthalpy, humidifier will take it to setpoint
+                    pointBuilder.withEnthalpy(this.desiredOutlet);
+                } else { // W is lower than outlet, humidifier is downstream, but h is higher than outlet
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            } else { // W is lower than outlet, humidifier is NOT downstream
+
+                if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // W and DB is lower than outlet, humidifier is NOT downstream
+                    // Heat to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // W is lower than outlet, humidifier is NOT downstream, but DB is higher than outlet
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            }
+
+        } else { // W is higher than outlet
+
+            if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // W is higher than outlet, DB is lower than outlet
+
+                if (this.isDownstream(CoolingCoil) && (this.isDownstream(HeatingCoil, Burner))) { // W is higher than outlet, DB is lower than outlet, cooling and reheat is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                } else { // W is higher than outlet, DB is lower than outlet, cooling and reheat is NOT downstream
+                    // Heat to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                }
+
+            } else {
+                // Do nothing
+                this.actualOutlet = this.inlet;
+            }
+
         }
-        this.actualOutlet = pointBuilder.build();
+
+        if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
+        // end of logic copied from Burner.calculate()
 
         this.loads = {
             power: psych.calculations.heating.capacity(
