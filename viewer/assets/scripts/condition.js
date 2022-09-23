@@ -112,6 +112,89 @@ class AirUnit {
 
 }
 
+class DryingLineAirUnit extends AirUnit {
+    constructor(inlets, dryingLineOutlets, volume, equipment) {
+        if (dryingLineOutlets.length != 2) {
+            console.error("A DryingLineAirUnit must have only two desired outlet setpoints");
+            return;
+        }
+
+        super(inlets, dryingLineOutlets, volume, equipment);
+
+        this.dryingLine = new psych.Line.LineOfConstantDBandRH({}, ...dryingLineOutlets);
+
+        // while the dryingLineOutlets won't always be the actual outlets, 
+        // upon initialization, we will assume those are the outlets.
+        // Actual outlet setpoints will be calculated in `calculate()`
+    }
+
+    calculate() {
+        this.dryingLine.calculate();
+
+        this.outlets = [];
+
+        this.inlets.forEach(inlet => {
+
+            // if inlet has higher absolute humidity than the line, 
+            // the outlet is the highest W of the line
+            if (this.dryingLine.isGreaterThan("W", inlet.properties.W)) {
+                this.outlets.push(this.dryingLine.getPointOfHighest("W"));
+                return;
+            }
+
+            
+            // if inlet has lower absolute humidity and enthalpy than the line, 
+            // the outlet is the lowest W of the line
+            if (this.dryingLine.isLessThan("W", inlet.properties.W) && this.dryingLine.isLessThan("h", inlet.properties.h)) {
+                this.outlets.push(this.dryingLine.getPointOfLowest("W"));
+                return;
+            }
+
+            // in any other case we do one of three things:
+            // 1. Heat to the line (inlet on left side of line)
+            // 2. Cool to the line (inlet on right side of line and absolute humidity is between the line)
+            // 3. Cool and Humidify to the line (inlet on right side of line and absolute humidity is below the line)
+            
+            // How to tell which side of the line our inlet is? 
+            // Check the W intersection point and see the DB temp difference is +/-
+            var heatingCoolingIntersectionPoint = this.dryingLine.findIntersection("W", inlet.properties.W);
+
+            if (!heatingCoolingIntersectionPoint) {
+                // the inlet W is not between the line, so humidify and cool
+                this.outlets.push(this.dryingLine.getPointOfLowest("W"));
+                return;
+
+            }
+
+
+            // heat or cool to intersection point
+            // except we have to adjust the intersection point
+            // right now (20220915) the `findIntersection` finds the closest point that is 
+            // in the `linePoints` list in the drying line, so the absolute humidity is close,
+            // but not exactly the same, which throws the heating and cooling calculation out of whack
+            // so let's make a small adjustment
+            
+            this.outlets.push(new psych.PointBuilder()
+                .withElevation(heatingCoolingIntersectionPoint)
+                .withDryBulb(heatingCoolingIntersectionPoint)
+                .withHumidityRatio(inlet)
+                .build()
+            );
+            return;
+
+        });
+
+        super.calculate();
+    }
+
+    draw() {
+        this.dryingLine.draw();
+        super.draw();
+    }
+
+
+}
+
 class AirProcess {
     constructor(inlet, desiredOutlet, volume = 0, downstreamProcesses = []) {
         this.inlet = inlet;
