@@ -209,7 +209,7 @@ class AirProcess {
     }
 
     calculateLoads() {
-        
+
     }
 
     draw() {
@@ -345,8 +345,15 @@ class Humidifier extends AirProcess {
         } else { // enthalpy is lower than outlet
 
             if (this.isDownstream(Burner, HeatingCoil)) { // enthalpy is lower than outlet, heating is downstream
-                // Humidify to W
-                pointBuilder.withHumidityRatio(this.desiredOutlet);
+
+                if (this.inlet.properties.W < this.desiredOutlet.properties.W) { // enthalpy and humidity ratio is lower than outlet, heating is downstream
+                    // Humidify to W
+                    pointBuilder.withHumidityRatio(this.desiredOutlet);
+                } else { // enthalpy is lower than outlet, humidity ratio is higher than outlet, heating is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+                
             } else { // enthalpy is lower than outlet, heating is NOT downstream
 
                 if (this.inlet.properties.db > this.desiredOutlet.properties.db) { // enthalpy is lower than outlet, DB is higher than outlet, heating is NOT downstream
