@@ -8,6 +8,7 @@
 
 var DEFAULT_COOLING_FLUID_DELTA_T = 20;
 var DEFAULT_HEATING_FLUID_DELTA_T = 60;
+var DEFAULT_MAX_SATURATION_EFFICIENCY = 0.95;
 
 class AirUnit {
     constructor(inlets, outlets, volume, equipment) {
@@ -370,20 +371,19 @@ class Humidifier extends AirProcess {
 
         if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
 
-        if (this.actualOutlet.properties.rh > 100) { 
-            // we wanted to humidify more than we can, so we're capped to 100% RH 
-            // (TODO: however in reality, we are limited to a humidifier's saturation efficiency. 
-            // So it would be interesting to implement a limit here somehow)
-            this.actualOutlet = new psych.PointBuilder()
-                .withElevation(this.actualOutlet)
-                .withEnthalpy(this.actualOutlet)
-                .withRelativeHumidity(100)
-                .build();
-        } 
-
         this.calculateLoads();
 
         if (this.loads.efficiency == Infinity) this.loads.efficiency = 0;
+
+        if (this.loads.efficiency > DEFAULT_MAX_SATURATION_EFFICIENCY) {
+            // limiting a humidifier to it's saturation efficiency
+            this.actualOutlet = psych
+                .calculations
+                .humidification
+                .maximumSaturation(this.inlet, DEFAULT_MAX_SATURATION_EFFICIENCY);
+
+            this.calculateLoads();
+        }
 
         return this.actualOutlet;
     }
