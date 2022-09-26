@@ -554,6 +554,23 @@ psych.calculations = {
 			var density = 1 / outletPoint.properties.v; // lb/ft^3
 			var massFlowRate = density * volumeInCFM; // lb/min
 			return (outletPoint.properties.W - inletPoint.properties.W) * massFlowRate / psych.constants.densityOfWater; // gpm
+		},
+
+		// returns an outlet point saturated to a given efficiency of an inlet point
+		maximumSaturation(pt, saturationEfficiency = 1.00) {
+			var saturationPt = new psych.PointBuilder()
+				.withElevation(pt)
+				.withRelativeHumidity(100)
+				.withEnthalpy(pt)
+				.build();
+			
+			var maxW = (saturationEfficiency * (saturationPt.properties.W - pt.properties.W)) + pt.properties.W;
+
+			return new psych.PointBuilder()
+				.withElevation(pt)
+				.withEnthalpy(pt)
+				.withHumidityRatio(maxW)
+				.build();
 		}
 	},
 
