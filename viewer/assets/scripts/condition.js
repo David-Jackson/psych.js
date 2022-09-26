@@ -208,6 +208,10 @@ class AirProcess {
 
     }
 
+    calculateLoads() {
+        
+    }
+
     draw() {
 
     }
@@ -289,12 +293,16 @@ class Burner extends AirProcess {
 
         if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
 
+        this.calculateLoads();
+
+        return this.actualOutlet;
+    }
+
+    calculateLoads() {
         this.loads = {
             power: psych.calculations.heating.capacity(
                 this.inlet, this.actualOutlet, this.volume)
         };
-
-        return this.actualOutlet;
     }
 
     draw() {
@@ -366,16 +374,20 @@ class Humidifier extends AirProcess {
                 .build();
         } 
 
+        this.calculateLoads();
+
+        if (this.loads.efficiency == Infinity) this.loads.efficiency = 0;
+
+        return this.actualOutlet;
+    }
+
+    calculateLoads() {
         this.loads = {
             efficiency: psych.calculations.humidification.efficiency(
                 this.inlet, this.actualOutlet),
             evaporationRate: psych.calculations.humidification.evaporationRate(
                 this.inlet, this.actualOutlet, this.volume)
         };
-
-        if (this.loads.efficiency == Infinity) this.loads.efficiency = 0;
-
-        return this.actualOutlet;
     }
 
     draw() {
@@ -472,6 +484,12 @@ class CoolingCoil extends AirProcess {
 
         }
 
+        this.calculateLoads();
+
+        return this.actualOutlet;
+    }
+
+    calculateLoads() {
         this.loads = {
             power: psych.calculations.cooling.capacity(
                 this.inlet, this.actualOutlet, this.volume),
@@ -480,8 +498,6 @@ class CoolingCoil extends AirProcess {
             coolingCoilFlowRate: psych.calculations.cooling.flowrate(
                 this.inlet, this.actualOutlet, this.volume, this.deltaTofCoolingFluid)
         };
-
-        return this.actualOutlet;
     }
 
     draw() {
@@ -562,14 +578,18 @@ class HeatingCoil extends AirProcess {
         if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
         // end of logic copied from Burner.calculate()
 
+        this.calculateLoads();
+
+        return this.actualOutlet;
+    }
+
+    calculateLoads() {
         this.loads = {
             power: psych.calculations.heating.capacity(
                 this.inlet, this.actualOutlet, this.volume),
             heatingCoilFlowRate: -psych.calculations.cooling.flowrate(
                 this.inlet, this.actualOutlet, this.volume, this.deltaTofHeatingFluid)
         };
-
-        return this.actualOutlet;
     }
 
     draw() {
