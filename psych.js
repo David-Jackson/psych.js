@@ -116,16 +116,19 @@ psych.PointBuilder = function () {
 				wb: "calcPointWithDbWb",
 				rh: "calcPointWithDbRh",
 				W: "calcPointWithDbW",
-				h: "calcPointWithDbH"
+				h: "calcPointWithDbH",
+				dp: "calcPointWithDbDp",
 			},
 			wb: {
 				rh: "calcPointWithWbRh",
 				W: "calcPointWithWbW",
+				dp: "calcPointWithWbDp",
 				// h: "calcPointWithWbH" // Excluded for the time being
 			},
 			rh: {
 				W: "calcPointWithRhW",
-				h: "calcPointWithRhH"
+				h: "calcPointWithRhH",
+				dp: "calcPointWithRhDp",
 			},
 			W: {
 				h: "calcPointWithWH"
@@ -185,6 +188,19 @@ psych.PointBuilder = function () {
 		}
 	}
 
+	this.calcPointWithDbDp = function () {
+		let elevation = this.properties.elevation;
+		let p = this.properties.atmPressure;
+		let db = this.properties.db;
+		let dp = this.properties.dp;
+
+		return {
+			elevation: elevation,
+			db: db,
+			W: psych.calculations.WD(p, dp)
+		}
+	}
+
 	this.calcPointWithWbRh = function () {
 		let elevation = this.properties.elevation;
 		let p = this.properties.atmPressure;
@@ -208,6 +224,19 @@ psych.PointBuilder = function () {
 			elevation: elevation,
 			db: psych.calculations.TWB(p, W, wb),
 			W: W
+		}
+	}
+
+	this.calcPointWithWbDp = function () {
+		let elevation = this.properties.elevation;
+		let p = this.properties.atmPressure;
+		let wb = this.properties.wb;
+		let dp = this.properties.dp;
+
+		return {
+			elevation: elevation,
+			db: psych.calculations.TWB(p, W, wb),
+			W: psych.calculations.WD(p, dp)
 		}
 	}
 
@@ -238,6 +267,19 @@ psych.PointBuilder = function () {
 			elevation: elevation,
 			db: psych.calculations.TRH(p, rh, h),
 			W: psych.calculations.WRH(p, rh, h)
+		}
+	}
+
+	this.calcPointWithRhDp = function () {
+		let elevation = this.properties.elevation;
+		let p = this.properties.atmPressure;
+		let rh = this.properties.rh;
+		let dp = this.properties.dp;
+
+		return {
+			elevation: elevation,
+			db: psych.calculations.TRH(p, rh, h),
+			W: psych.calculations.WD(p, dp)
 		}
 	}
 
@@ -300,6 +342,14 @@ psych.PointBuilder = function () {
 			return this.withEnthalpy(enth.properties.h);
 		}
 		this.properties.h = enth;
+		return this;
+	}
+
+	this.withDewPoint = function (temp) {
+		if (temp instanceof psych.Point) {
+			return this.withDewPoint(temp.properties.dp);
+		}
+		this.properties.dp = temp;
 		return this;
 	}
 
