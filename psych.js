@@ -71,7 +71,7 @@ psych.Point = function (opts) {
 
 	this.toHTML = function () {
 		return (
-			"<p>Elevation: " + this.properties.elevation + "ft</p>" +
+			"<p>Elevation: " + this.properties.elevation + " ft</p>" +
 			"<p>Dry Bulb Temp: " + this.properties.db.toFixed(2) + String.fromCharCode(176) + "F</p>" +
 			"<p>Wet Bulb Temp: " + this.properties.wb.toFixed(2) + String.fromCharCode(176) + "F</p>" +
 			"<p>Relative Humidity: " + this.properties.rh.toFixed(2) + "%</p>" +
