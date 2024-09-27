@@ -11,7 +11,7 @@ var DEFAULT_HEATING_FLUID_DELTA_T = 60;
 var DEFAULT_MAX_SATURATION_EFFICIENCY = 0.95;
 
 class AirUnit {
-    constructor(inlets, outlets, volume, equipment) {
+    constructor(inlets, outlets, volume, equipment, secondaryInlets = [], secondaryVolume = 0) {
         if (inlets.length > 2 || outlets.length > 2) {
             console.error("Not designed to have more than two inlet or outlet setpoints", inlets, outlets);
             return;
@@ -29,6 +29,8 @@ class AirUnit {
         this.outlets = outlets;
         this.volume = volume;
         this.equipment = equipment;
+        this.secondaryInlets = secondaryInlets;
+        this.secondaryVolume = secondaryVolume;
     }
 
     calculate() {
@@ -45,17 +47,38 @@ class AirUnit {
             if (this.equipment[this.equipment.length - 1] == Fan) {
                 hasFan = true;
                 equipmentCount = this.equipment.length - 1;
-                var fanProcess = this.equipment[this.equipment.length - 1];
-                fanProcess = new fanProcess(inlet, outlet, this.volume, []);
-                fanProcess.calculate();
-                this.processes[setpointIndex][this.equipment.length - 1] = fanProcess;
-                outlet = fanProcess.inlet;
+
+                // check if Fan should be accounted for (we don't want to account for it
+                // if we are heating and humidifying, only if we are cooling to setpoint)
+                if (inlet.properties.db >= outlet.properties.db) { // only calculate if the inlet db is greater
+                    var fanProcess = this.equipment[this.equipment.length - 1];
+                    fanProcess = new fanProcess(inlet, outlet, this.volume, []);
+                    fanProcess.calculate();
+                    this.processes[setpointIndex][this.equipment.length - 1] = fanProcess;
+                    outlet = fanProcess.inlet;
+                } else {
+                    hasFan = false;
+                }
+
             }
 
             var currentInlet = inlet;
             for (var i = 0; i < equipmentCount; i++) {
+                var downstreamEquipment = this.equipment.slice(i + 1);
                 var process = this.equipment[i];
-                process = new process(currentInlet, outlet, this.volume, this.equipment.slice(i + 1));
+
+                if (process == MixingChamber) {
+                    var secondaryInlet = this.secondaryInlets[setpointIndex];
+                    var secondaryVolume = this.secondaryVolume;
+                    process = new process(currentInlet, secondaryInlet, outlet, this.volume, secondaryVolume, downstreamEquipment);
+                } else {
+                    process = new process(currentInlet, outlet, this.volume, downstreamEquipment);
+                }
+
+                if (!process.isDownstream(MixingChamber)) {
+                    process.volume = this.volume + this.secondaryVolume;
+                }
+
                 var currentInlet = process.calculate();
                 this.processes[setpointIndex][i] = process;
             }
@@ -63,7 +86,7 @@ class AirUnit {
             if (hasFan) {
                 var fanProcess = this.processes[setpointIndex][this.equipment.length - 1];
                 if (currentInlet.properties.db != fanProcess.inlet.properties.db &&
-                    currentInlet.properties.W != fanProcess.inlet.propertiesW) {
+                    currentInlet.properties.W != fanProcess.inlet.properties.W) {
 
                     fanProcess = new FanFixedInlet(currentInlet, this.volume, []);
                     fanProcess.calculate();
@@ -240,7 +263,7 @@ class AirProcess {
     }
 
     calculate() {
-
+        return this.inlet;
     }
 
     calculateLoads() {
@@ -269,6 +292,7 @@ class MixedFlow {
 
     calculate() {
         this.actualOutlet = psych.MixedFlow(this.point1, this.point2);
+        return this.actualOutlet;
     }
 
     draw() {
@@ -298,6 +322,29 @@ class MixedFlowFixedOutlet {
         graph.addPoints(graph.colors.points.grey, this.point1, this.point2, this.mixedPoint);
         graph.addLine(graph.colors.lines.orange, [this.point1, this.point2]);
     }
+}
+
+class MixingChamber extends AirProcess {
+    constructor(primaryInlet, secondaryInlet, desiredOutlet, primaryVolume, secondaryVolume, downstreamProcesses = []) {
+        super(primaryInlet, desiredOutlet, primaryVolume, downstreamProcesses);
+
+        this.secondaryInlet = secondaryInlet;
+        this.secondaryVolume = secondaryVolume;
+
+        this.inlet.properties.volume = primaryVolume;
+        this.secondaryInlet.properties.volume = secondaryVolume;
+    }
+
+    calculate() {
+        this.actualOutlet = psych.MixedFlow(this.inlet, this.secondaryInlet);
+        return this.actualOutlet;
+    }
+
+    draw() {
+        graph.addPoints(graph.colors.points.grey, this.inlet, this.secondaryInlet, this.actualOutlet);
+        graph.addLine(graph.colors.lines.orange, [this.inlet, this.secondaryInlet]);
+    }
+
 }
 
 class Burner extends AirProcess {
