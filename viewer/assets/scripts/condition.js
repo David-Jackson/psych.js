@@ -111,6 +111,10 @@ class AirUnit {
         }
     }
 
+    hasEquipment(...processClasses) {
+        return this.equipment.reduce((acc, p) => acc || (processClasses.indexOf(p) != -1), false);
+    }
+
 }
 
 class DryingLineAirUnit extends AirUnit {
