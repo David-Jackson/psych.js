@@ -567,6 +567,36 @@ class CoolingCoil extends AirProcess {
         super(inlet, desiredOutlet, volume, downstreamProcesses);
         this.deltaTofCoolingFluid = deltaTofCoolingFluid;
     }
+
+    calculateOutletWithSensibleHeatRatio(targetOutlet, sensibleHeatRatio = 0.65) {
+
+        var latentHeatRatio = 1 - sensibleHeatRatio;
+
+        var latentCoolingPoint = new psych.PointBuilder()
+            .withElevation(this.inlet)
+            .withHumidityRatio(targetOutlet)
+            .withDryBulb(this.inlet)
+            .build();
+        
+        var latentEnthalpyChange = this.inlet.properties.h - latentCoolingPoint.properties.h;
+        var totalEnthalpyChange = latentEnthalpyChange / latentHeatRatio;
+
+        this.sensibleHeatOutlet = new psych.PointBuilder()
+            .withElevation(this.inlet)
+            .withEnthalpy(this.inlet.properties.h - totalEnthalpyChange)
+            .withHumidityRatio(targetOutlet)
+            .build();
+        
+        if (this.sensibleHeatOutlet.properties.rh > 100) {
+            this.sensibleHeatOutlet = new psych.PointBuilder()
+                .withElevation(this.inlet)
+                .withHumidityRatio(targetOutlet)
+                .withRelativeHumidity(100)
+                .build();
+        }
+
+
+    }
     calculate() {
 
         if (this.inlet.properties.db > this.desiredOutlet.properties.db) { // DB is higher than outlet
@@ -580,6 +610,9 @@ class CoolingCoil extends AirProcess {
                         .withHumidityRatio(this.desiredOutlet)
                         .withRelativeHumidity(100)
                         .build()
+                    
+                    this.calculateOutletWithSensibleHeatRatio(this.actualOutlet, 0.65);
+
                 } else { // DB and W is higher than outlet, heating is NOT downstream
                     // Cool just to the DB
                     this.actualOutlet = new psych.PointBuilder()
@@ -632,6 +665,9 @@ class CoolingCoil extends AirProcess {
                         .withHumidityRatio(this.desiredOutlet)
                         .withRelativeHumidity(100)
                         .build()
+                    
+                    this.calculateOutletWithSensibleHeatRatio(this.actualOutlet, 0.65);
+
                 } else { // DB is lower than outlet, W is higher than outlet, heating is NOT downstream
                     // Do nothing
                     this.actualOutlet = this.inlet;
@@ -664,13 +700,18 @@ class CoolingCoil extends AirProcess {
         if (this.inlet.properties.db != this.actualOutlet.properties.db) {
             graph.addPoints(graph.colors.points.grey, this.inlet, this.actualOutlet);
 
+            if (this.sensibleHeatOutlet) {
+                graph.addPoints(graph.colors.points.grey, this.sensibleHeatOutlet);
+                graph.addLine(graph.colors.lines.blue, [this.inlet, this.sensibleHeatOutlet]);
+            }
+
             if (this.inlet.properties.W <= this.actualOutlet.properties.W) {
                 graph.addLine(graph.colors.lines.blue, [this.inlet, this.actualOutlet]);
             } else {
                 this.saturationPoint = new psych.PointBuilder()
                     .withElevation(this.inlet)
                     .withHumidityRatio(this.inlet)
-                    .withRelativeHumidity(100)
+                    .withRelativeHumidity(this.actualOutlet)
                     .build();
 
                 graph.addLine(graph.colors.lines.blue, [this.inlet, this.saturationPoint]);
