@@ -84,6 +84,7 @@ function Graph(_width, _height) {
 			x: {
 				width: this.width,
 				height: this.properties.defaults.axesSize,
+				startOffset: this.properties.defaults.axesSize,
 
 				min: 20, // degrees F
 				max: 120 // degrees F
@@ -97,6 +98,18 @@ function Graph(_width, _height) {
 			}
 		};
 
+		this.properties.display = {
+			dbLines: true, // dry bulb lines and labels
+			rhLines: true, // relative humidity lines and labels
+			wLines: true, // humidity ratio lines and labels
+			wbLines: true, // wet bulb lines and labels
+			hLines: true, // enthalpy lines and labels
+		};
+
+
+	};
+
+	this.initMenu = function() {
 
 	};
 
