@@ -34,7 +34,3 @@ function mousePressed() {
 function toggleUI(toggle) {
 	console.log(toggle);
 }
-
-window.ondblclick = function() {
-	graph.addPointFromXY(mouseX, mouseY);
-}

@@ -1355,10 +1355,12 @@ function parseHeatmapFile(file) {
 
 
 var historicalData = null;
+var rawHistoricalData = null
 
 // take results from CSV parse and create a heatmap
 function processHeatmap(results) {
     console.log("Processing", results.length, "results", results);
+    rawHistoricalData = results;
     var dataObj = results
         .map(x => {
             return {
@@ -1427,12 +1429,15 @@ function processHeatmap(results) {
     heatmapContainer.style.height = height + "px";
     heatmapContainer.style.width = width + "px";
 
-    document.querySelector("#sketch-holder").appendChild(heatmapContainer)
+    document.querySelector("#sketch-holder").appendChild(heatmapContainer);
 
     var heatmapInstance = h337.create({
         container: heatmapContainer,
         maxOpacity: 0.6,
-        radius: 25
+        radius: 25,
+        onExtremaChange: function(data) {
+            updateLegend(data);
+        }
     });
 
     heatmapInstance.setData({
@@ -1467,3 +1472,33 @@ function removeHeatmap() {
 
     }
 }
+
+function updateLegend(data) {
+    /*  start legend code */
+    // we want to display the gradient, so we have to draw it
+    // var legendCanvas = document.createElement('canvas');
+    // legendCanvas.width = 100;
+    // legendCanvas.height = 10;
+    // var min = document.querySelector('#min');
+    // var max = document.querySelector('#max');
+    // var gradientImg = document.querySelector('#gradient');
+    // var legendCtx = legendCanvas.getContext('2d');
+    // var gradientCfg = {};
+    // // the onExtremaChange callback gives us min, max, and the gradientConfig
+    // // so we can update the legend
+    // min.innerHTML = data.min;
+    // max.innerHTML = data.max;
+    // // regenerate gradient image
+    // if (data.gradient != gradientCfg) {
+    //     gradientCfg = data.gradient;
+    //     var gradient = legendCtx.createLinearGradient(0, 0, 100, 1);
+    //     for (var key in gradientCfg) {
+    //     gradient.addColorStop(key, gradientCfg[key]);
+    //     }
+    //     legendCtx.fillStyle = gradient;
+    //     legendCtx.fillRect(0, 0, 100, 10);
+    //     gradientImg.src = legendCanvas.toDataURL();
+    // }
+    /* legend code end */
+
+};

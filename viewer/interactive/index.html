@@ -4,7 +4,6 @@
 <head>
 	<title>Interactive Psychrometric Chart</title>
 	<script src="../../psych.js"></script>
-	<script src="../../components/psych_line.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.13/p5.js" async defer></script>
 	<script src="../assets/scripts/graph.js"></script>
 	<script src="../assets/scripts/condition.js"></script>
@@ -36,6 +35,11 @@
 
 		nav {
 			background-color: rgb(0, 40, 86);
+			/* visibility: hidden;
+		}
+
+		.row {
+			visibility: hidden; */
 		}
 
 		#durrLogo {
@@ -103,8 +107,8 @@
 	</div>
 	<nav>
 		<div class="nav-wrapper noselect">
-			<a href="#" class="brand-logo center">
-				Interactive Psychrometric Chart
+			<a href="#" class="brand-logo center" style="height: 100%;">
+				<img src="../assets/GallagherKaiser_Logo_Horizontal_less_padding.svg" alt="Gallager-Kaiser" style="height: 100%;">
 			</a>
 			<ul class="left">
 				<li><a data-target="slide-out" class="sidenav-trigger show-on-large">
@@ -123,6 +127,55 @@
 
 	<ul id="slide-out" class="sidenav">
 		<li><a class="subheader">Settings</a></li>
+		<li>
+			<div class="divider"></div>
+		</li>
+		<li><a class="subheader">Graph</a></li>
+		<li><a>
+		<div class="switch">
+			<label>
+				<input type="checkbox" id="dbLines-switch">
+				<span class="lever"></span>
+				Dry Bulb Lines
+			</label>
+		</div>
+		</a></li>
+		<li><a>
+		<div class="switch">
+			<label>
+				<input type="checkbox" id="rhLines-switch">
+				<span class="lever"></span>
+				Relative Humidity Lines
+			</label>
+		</div>
+		</a></li>
+		<li><a>
+		<div class="switch">
+			<label>
+				<input type="checkbox" id="wLines-switch">
+				<span class="lever"></span>
+				Humidity Ratio Lines
+			</label>
+		</div>
+		</a></li>
+		<li><a>
+		<div class="switch">
+			<label>
+				<input type="checkbox" id="wbLines-switch">
+				<span class="lever"></span>
+				Wet Bulb Lines
+			</label>
+		</div>
+		</a></li>
+		<li><a>
+		<div class="switch">
+			<label>
+				<input type="checkbox" id="hLines-switch">
+				<span class="lever"></span>
+				Enthalpy Lines
+			</label>
+		</div>
+		</a></li>
 		<li>
 			<div class="divider"></div>
 		</li>
@@ -150,6 +203,13 @@
 	<div id="sketch-holder">
 
 	</div>
+
+	<!-- <div class="legend-area">
+		<h4>Legend Title</h4>
+		<span id="min">3</span>
+		<span id="max">1223</span>
+		<img id="gradient" src="" style="width:100%">
+	</div> -->
 
 	<script>
 		$(document).ready(function () {
