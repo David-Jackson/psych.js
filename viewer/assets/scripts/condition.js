@@ -463,7 +463,103 @@ class Humidifier extends AirProcess {
 }
 
 class Dehumidifier extends AirProcess {
+    calculate() {
+        var pointBuilder = new psych.PointBuilder()
+            .withElevation(this.inlet)
+            .withEnthalpy(this.inlet);
 
+        if (this.inlet.properties.h > this.desiredOutlet.properties.h) { // enthalpy is higher than outlet
+
+            if (this.isDownstream(CoolingCoil)) { // enthalpy is higher than outlet, cooling is downstream
+
+                if (this.inlet.properties.W > this.desiredOutlet.properties.W) { // enthalpy is higher than outlet, W is higher than outlet, cooling is downstream
+                    // Dehumidify to W
+                    pointBuilder.withHumidityRatio(this.desiredOutlet);
+                } else { // enthalpy and W is lower than outlet, cooling is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            } else { // enthalpy is higher than outlet, cooling is NOT downstream
+
+                if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // enthalpy and DB is lower than outlet, cooling is NOT downstream
+                    // Dehumidify to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // enthalpy is higher than outlet, DB is higher than outlet, cooling is NOT downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+            }
+
+        } else { // enthalpy is lower than outlet
+
+            if (this.isDownstream(Burner, HeatingCoil)) { // enthalpy is lower than outlet, heating is downstream
+
+                if (this.inlet.properties.W > this.desiredOutlet.properties.W) { // enthalpy and humidity ratio is higher than outlet, heating is downstream
+                    // Dehumidify to W
+                    pointBuilder.withHumidityRatio(this.desiredOutlet);
+                } else { // enthalpy is lower than outlet, humidity ratio is lower than outlet, heating is downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+                
+            } else { // enthalpy is lower than outlet, heating is NOT downstream
+
+                if (this.inlet.properties.db < this.desiredOutlet.properties.db) { // enthalpy is lower than outlet, DB is lower than outlet, heating is NOT downstream
+                    // Dehumidify to DB
+                    pointBuilder.withDryBulb(this.desiredOutlet);
+                } else { // enthalpy and DB is higher than outlet, heating is NOT downstream
+                    // Do nothing
+                    this.actualOutlet = this.inlet;
+                }
+
+            }
+
+        }
+
+        if (!this.actualOutlet) this.actualOutlet = pointBuilder.build();
+
+        if (this.actualOutlet.properties.W < 0) {
+            this.actualOutlet = new psych.PointBuilder()
+                .withElevation(this.inlet)
+                .withEnthalpy(this.inlet)
+                .withHumidityRatio(0)
+                .build();
+        }
+
+        this.calculateLoads();
+
+        if (this.loads.efficiency == Infinity) this.loads.efficiency = 0;
+
+        // TODO: Add limit to dehumidification (desaturation efficiency)
+        // if (this.loads.efficiency > DEFAULT_MAX_SATURATION_EFFICIENCY) {
+        //     // limiting a humidifier to it's saturation efficiency
+        //     this.actualOutlet = psych
+        //         .calculations
+        //         .humidification
+        //         .maximumSaturation(this.inlet, DEFAULT_MAX_SATURATION_EFFICIENCY);
+
+        //     this.calculateLoads();
+        // }
+
+        return this.actualOutlet;
+    }
+
+    calculateLoads() {
+        this.loads = {
+            efficiency: psych.calculations.humidification.efficiency(
+                this.inlet, this.actualOutlet),
+            evaporationRate: psych.calculations.humidification.evaporationRate(
+                this.inlet, this.actualOutlet, this.volume)
+        };
+    }
+
+    draw() {
+        if (this.inlet.properties.db != this.actualOutlet.properties.db) {
+            graph.addPoints(graph.colors.points.grey, this.inlet, this.actualOutlet);
+            graph.addLine(graph.colors.lines.orange, [this.inlet, this.actualOutlet]);
+        }
+    }
 }
 
 class CoolingCoil extends AirProcess {
