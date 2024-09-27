@@ -432,7 +432,6 @@ psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree =
 	this.findIntersection = function(propertyName, value) {
 
         if (!this.isBetween(propertyName, value)) {
-            console.log("Cannot find intersection: a", propertyName, "of", value, "is not within line");
             return;
         }
 
@@ -467,7 +466,6 @@ psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree =
 
         var guessPoint = this.linePoints[midIndex];
         
-        graph.addPoints(graph.colors.points.green, guessPoint);
         return guessPoint;
     }
 
@@ -813,7 +811,7 @@ psych.calculations = {
 		return RH * this.PWS(TF) / 100
 	},
 
-	V(P, TF, RH) {
+	V(P, TF, RH) { // Specific Volume (ft^3/lb of dry air) given pressure (), temperature (F), and relative humidity (%)
 		if (RH < 0) {
 			return null;
 		}
