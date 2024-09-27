@@ -394,6 +394,7 @@ psych.Line = window.psych.Line || {};
 psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree = 100) {
 
 	this.style = style;
+	if (this.style = {}) this.style = graph.colors.lines.orange;
 	this.inputPoint1 = pt1;
 	this.inputPoint2 = pt2;
 
@@ -424,7 +425,8 @@ psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree =
     }
 
     this.draw = function() {
-        graph.addLine(graph.colors.lines.orange, this.linePoints);
+
+        graph.addLine(this.style, this.linePoints);
     }
 	
 	this.findIntersection = function(propertyName, value) {
