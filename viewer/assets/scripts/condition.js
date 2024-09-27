@@ -159,10 +159,39 @@ class DryingLineAirUnit extends AirUnit {
             // 1. Heat to the line (inlet on left side of line)
             // 2. Cool to the line (inlet on right side of line and absolute humidity is between the line)
             // 3. Cool and Humidify to the line (inlet on right side of line and absolute humidity is below the line)
-            
+
             // How to tell which side of the line our inlet is? 
             // Check the W intersection point and see the DB temp difference is +/-
             var heatingCoolingIntersectionPoint = this.dryingLine.findIntersection("W", inlet.properties.W);
+
+            if (heatingCoolingIntersectionPoint != undefined) {
+                // we are in between the line on the W scale
+                // heat or cool to the line
+                this.outlets.push(new psych.PointBuilder()
+                    .withElevation(heatingCoolingIntersectionPoint)
+                    .withDryBulb(heatingCoolingIntersectionPoint)
+                    .withHumidityRatio(inlet)
+                    .build()
+                );
+                return;
+            }
+
+            if (this.hasEquipment(Humidifier)) {
+                var humidifyingIntersectionPoint = this.dryingLine.findIntersection("h", inlet.properties.h);
+
+                // if an enthalpy intersection point exists, and
+                // the inlet is on right side of drying line, then humidify to intersection
+                if (humidifyingIntersectionPoint != undefined && 
+                    (!heatingCoolingIntersectionPoint ||
+                    heatingCoolingIntersectionPoint.properties.db < inlet.properties.db)) {
+                        this.outlets.push(humidifyingIntersectionPoint);
+                        return;
+                } else {
+                    this.outlets.push(this.dryingLine.getPointOfHighest("W"));
+                    return;
+                }
+            
+            }
 
             if (!heatingCoolingIntersectionPoint) {
                 // the inlet W is not between the line, so humidify and cool
@@ -170,6 +199,7 @@ class DryingLineAirUnit extends AirUnit {
                 return;
 
             }
+            
 
 
             // heat or cool to intersection point
