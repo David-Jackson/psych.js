@@ -510,6 +510,62 @@ psych.Line.LineOfConstantDBandRH = function(style, pt1, pt2, segmentsPerDegree =
 			return this.inputPoint2
 		}
 	}
+
+	// interpolate will return a point that is t distance between the inputPoint1 (0) and inputPoint2 (1)
+	// t is between 0 and 1
+	// if t is 0.5, then the result will be the point that is halfway between inputPoint1 and inputPoint2
+	this.interpolate = function(t) {
+		if (t < 0 || t > 1) {
+			console.error("Interpolate Error: t must be between 0 and 1");
+			return;
+		}
+		var ptIndex = Math.floor(this.STEPS * t);
+		return this.linePoints[ptIndex];
+	}
+
+	// inverseInterpolate will return the percentage that some property of pt 
+	// is between inputPoint1 (0) and inputPoint2 (1)
+	this.inverseInterpolate = function(pt, propertyName) {
+		if (!this.isBetween(propertyName, pt.properties[propertyName])) {
+			console.error("Inverse Interpolate Error: point does not intersect with line of constant DB and RH");
+			return;
+		}
+		
+		var value = pt.properties[propertyName];
+
+		// using same code from this.findIntersection
+        var ITERATION_LIMIT = 1000;
+        var iterCount = 0;
+
+        var leftIndex = 0;
+        var rightIndex = this.linePoints.length - 1;
+        var midIndex = Math.floor((leftIndex + rightIndex) / 2);
+
+        var arrayOrderAdjustment = 1;
+        // swap the comparator if the line is "reversed" (ordered largest to smallest)
+        if (this.linePoints[rightIndex].properties[propertyName] < this.linePoints[leftIndex].properties[propertyName]) {
+            arrayOrderAdjustment = -1;
+        }
+        
+        while (rightIndex - leftIndex > 1) {
+            
+            iterCount++;
+            if (iterCount > ITERATION_LIMIT) break;
+            
+            if ((arrayOrderAdjustment * value) < (arrayOrderAdjustment * this.linePoints[midIndex].properties[propertyName])) {
+                rightIndex = midIndex;
+            } else {
+                leftIndex = midIndex;
+            }
+            
+            midIndex = Math.floor((leftIndex + rightIndex) / 2);
+
+        }
+
+		var t = midIndex * 1.0 / this.STEPS
+        
+        return t;
+	}
 }
 
 
