@@ -277,6 +277,29 @@ class MixedFlow {
     }
 }
 
+class MixedFlowFixedOutlet {
+	// Calculate the other inlet point of a mixed flow,
+	// when one inlet is known and the outlet point is known
+    constructor(point1, volume1, mixedPoint, mixedPointVolume) {
+        this.point1 = point1;
+        this.mixedPoint = mixedPoint;
+        this.volume1 = volume1;
+        this.mixedPointVolume = mixedPointVolume;
+
+        this.point1.properties.volume = this.volume1;
+        this.mixedPoint.properties.volume = this.mixedPointVolume;
+    }
+
+    calculate() {
+        this.point2 = psych.MixedFlowFixedOutlet(this.point1, this.mixedPoint);
+    }
+
+    draw() {
+        graph.addPoints(graph.colors.points.grey, this.point1, this.point2, this.mixedPoint);
+        graph.addLine(graph.colors.lines.orange, [this.point1, this.point2]);
+    }
+}
+
 class Burner extends AirProcess {
     calculate() {
         var pointBuilder = new psych.PointBuilder()
