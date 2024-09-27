@@ -716,6 +716,12 @@ psych.calculations = {
 		}
 	},
 
+	dehumidification: {
+		efficiency(pt1, pt2) {
+			return 1 - (pt2.properties.W / pt1.properties.W);
+		}
+	},
+
 	cooling: {
 		capacity(inletPoint, outletPoint, volumeInCFM) {
 			var density = 1 / outletPoint.properties.v; // lb/ft^3
