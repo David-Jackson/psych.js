@@ -546,6 +546,42 @@ psych.MixedFlow = function (pt1, pt2) {
 	return mixedPoint;
 };
 
+psych.MixedFlowFixedOutlet = function (pt1, outletPt) {
+	// Calculate the other inlet point of a mixed flow,
+	// when one inlet is known and the outlet point is known
+	this.requiredParameters = ["elevation", "db", "W", "volume", "v"];
+	this.requiredParameters.forEach(function (p) {
+		if (typeof pt1.properties[p] == "undefined") {
+			console.error(p + " not defined in Point 1");
+			return null;
+		}
+		if (typeof outletPt.properties[p] == "undefined") {
+			console.error(p + " not defined in Outlet Point");
+			return null;
+		}
+	});
+
+	if (pt1.properties.elevation != outletPt.properties.elevation) {
+		console.error("Elevations of the provided points do not match.");
+		return null;
+	}
+
+	var mFlow1 = pt1.properties.volume * 60 / pt1.properties.v;
+	var mFlow3 = outletPt.properties.volume * 60 / outletPt.properties.v;
+
+	var mFlow2 = mFlow3 - mFlow1;
+
+	var pt2 = new psych.PointBuilder()
+		.withElevation(pt1.properties.elevation)
+		.withDryBulb(pt1.properties.db + ((outletPt.properties.db - pt1.properties.db) * (mFlow3 / mFlow2)))
+		.withHumidityRatio(pt1.properties.W + ((outletPt.properties.W - pt1.properties.W) * (mFlow3 / mFlow2)))
+		.build();
+
+	pt2.properties.volume = outletPt.properties.volume - pt1.properties.volume;
+
+	return pt2;
+};
+
 psych.constants = {
 	INPSI: (760 * 9.80665 * 0.45359237) / (Math.pow(25.4, 3) * 0.101325), // INPSI = inHg per psia
 	MA: 28.9645, // Molecular weight of air
