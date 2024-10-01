@@ -165,6 +165,30 @@ class DryingLineAirUnit extends AirUnit {
             var heatingCoolingIntersectionPoint = this.dryingLine.findIntersection("W", inlet.properties.W);
 
             if (heatingCoolingIntersectionPoint != undefined) {
+                if (this.hasEquipment(CoolingCoil)) {
+                    this.outlets.push(new psych.PointBuilder()
+                        .withElevation(heatingCoolingIntersectionPoint)
+                        .withDryBulb(heatingCoolingIntersectionPoint)
+                        .withHumidityRatio(inlet)
+                        .build()
+                    );
+                    return;
+                }
+                if (this.hasEquipment(Humidifier)) {
+                    var humidifyingIntersectionPoint = this.dryingLine.findIntersection("h", inlet.properties.h);
+
+                    // if an enthalpy intersection point exists, and
+                    // the inlet is on right side of drying line, then humidify to intersection
+                    if (humidifyingIntersectionPoint != undefined) {
+                        this.outlets.push(new psych.PointBuilder()
+                            .withElevation(humidifyingIntersectionPoint)
+                            .withHumidityRatio(humidifyingIntersectionPoint)
+                            .withEnthalpy(inlet)
+                            .build()
+                        );
+                        return;
+                    }
+                }
                 // we are in between the line on the W scale
                 // heat or cool to the line
                 this.outlets.push(new psych.PointBuilder()
