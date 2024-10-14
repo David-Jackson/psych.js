@@ -324,6 +324,53 @@ class MixedFlowFixedOutlet {
     }
 }
 
+class HeatRecoveryWheel extends AirProcess {
+    constructor(inlet, desiredOutlet, volume = 0, downstreamProcesses = [], efficiency = 0.64) { 
+        // 80% efficiency on both sides of the wheel (0.8 * 0.8 = 0.64)
+        super(inlet, desiredOutlet, volume, downstreamProcesses);
+        this.efficiency = efficiency;
+    }
+
+    calculate() {
+        // Assume that the unit will reach the desired outlet temperature
+
+        // this is the temperature of the wheel for heat to be recovered from
+        var wheelTemperature = this.desiredOutlet.properties.db; 
+
+        // add 5 deg to account for heat gained in the process
+        wheelTemperature += 5;
+
+        var inletAirTemperature = this.inlet.properties.db;
+
+        var deltaT = this.efficiency * (wheelTemperature - inletAirTemperature);
+
+        this.actualOutlet = new psych.PointBuilder()
+            .withElevation(this.inlet)
+            .withDryBulb(this.inlet.properties.db + deltaT)
+            .withHumidityRatio(this.inlet)
+            .build();
+
+        this.calculateLoads();
+
+        return this.actualOutlet;
+
+    }
+
+    calculateLoads() {
+        this.loads = {
+            power: psych.calculations.heating.capacity(
+                this.inlet, this.actualOutlet, this.volume)
+        };
+    }
+
+    draw() {
+        graph.addPoints(graph.colors.points.grey, this.inlet, this.actualOutlet);
+        graph.addLine(graph.colors.lines.orange, [this.inlet, this.actualOutlet]);
+    }
+
+
+}
+
 class Burner extends AirProcess {
     calculate() {
         var pointBuilder = new psych.PointBuilder()
