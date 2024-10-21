@@ -1,8 +1,6 @@
-
-
 /**
  * A collection of constants used in psychrometric calculations.
- * 
+ *
  * @constant
  * @type {Object}
  * @property {number} INPSI - Conversion factor from inHg to psia.
@@ -31,23 +29,22 @@
  * @property {number} densityOfWater - Density of water in lb/gal.
  */
 export const constants = {
-    // INPSI = inHg per psia
+	// INPSI = inHg per psia
 	INPSI: (760 * 9.80665 * 0.45359237) / (Math.pow(25.4, 3) * 0.101325),
 
-
-    MA: 28.9645, // Molecular weight of air
+	MA: 28.9645, // Molecular weight of air
 	MW: 18.01528, // Molecular weight of water
 
-    C1: 0.240145, // C1 thru C4 are constants used in the equation for h
+	C1: 0.240145, // C1 thru C4 are constants used in the equation for h
 	C2: 0.0000016,
 	C3: 1061.1,
 	C4: 0.4328,
 
-    K1: 1.00402, // K1 thru K3 are constants used in the equation for W
+	K1: 1.00402, // K1 thru K3 are constants used in the equation for W
 	K2: 1.016,
 	K3: 0.0000025,
 
-    // ASHRAE constants for PWS equations:
+	// ASHRAE constants for PWS equations:
 	P1: -10214.165,
 	P2: -4.8932428,
 	P3: -0.0053765794,
